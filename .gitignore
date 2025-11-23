@@ -1,0 +1,70 @@
+# ========================================
+# KAYAMANAN BANKING SYSTEM - .gitignore
+# ========================================
+
+# ------------------------
+# Python / Virtual Env
+# ------------------------
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pdb
+*.egg-info/
+venv/
+env/
+ENV/
+
+# ------------------------
+# Django Files
+# ------------------------
+# SQLite DB (We don't store local DB in repo)
+*.sqlite3
+
+# Local static & media (should not be tracked)
+static/
+staticfiles/
+media/
+
+# Sensitive environment variables
+.env
+
+# Log files
+*.log
+
+# Caches
+cache/
+*.cache
+*.pot
+*.mo
+
+# Temporary files
+*.tmp
+*.swp
+*.bak
+
+# ------------------------
+# OS / IDE Files
+# ------------------------
+
+# macOS Finder
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# VSCode Settings (optional to ignore)
+.vscode/
+
+# JetBrains (PyCharm)
+.idea/
+
+# ------------------------
+# Node / Frontend (if you add modern UI later)
+# ------------------------
+node_modules/
+package-lock.json
+yarn.lock
+
+# ========================================
+# END
+# ========================================
