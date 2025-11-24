@@ -1,0 +1,184 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Kayamanan Bank{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4"><i class="fas fa-tachometer-alt me-2"></i>Dashboard</h1>
+        <p class="lead">Welcome back, {{ user.first_name|default:user.username }}!</p>
+    </div>
+</div>
+
+<!-- Quick Stats -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">Total Balance</h4>
+                        <h2>₱{{ total_balance|default:0|floatformat:2 }}</h2>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-wallet fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">Active Loans</h4>
+                        <h2>{{ active_loans_count|default:0 }}</h2>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-hand-holding-usd fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">Accounts</h4>
+                        <h2>{{ accounts_count|default:0 }}</h2>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-piggy-bank fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">Pending Loans</h4>
+                        <h2>{{ pending_loans_count|default:0 }}</h2>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-clock fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Recent Transactions -->
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0"><i class="fas fa-history me-2"></i>Recent Transactions</h5>
+                <a href="{% url 'transactions:transaction_list' %}" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body">
+                {% if recent_transactions %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Description</th>
+                                <th>Account</th>
+                                <th>Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for transaction in recent_transactions %}
+                            <tr>
+                                <td>{{ transaction.transaction_date|date:"M d, Y" }}</td>
+                                <td>{{ transaction.description|default:"No description" }}</td>
+                                <td>{{ transaction.account.account_number }}</td>
+                                <td class="{% if transaction.transaction_type == 'deposit' %}text-success{% else %}text-danger{% endif %}">
+                                    {% if transaction.transaction_type == 'deposit' %}+{% else %}-{% endif %}₱{{ transaction.amount }}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">No recent transactions.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions & Notifications -->
+    <div class="col-md-4">
+        <!-- Quick Actions -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0"><i class="fas fa-bolt me-2"></i>Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{% url 'accounts:account_create' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-plus me-2"></i>Open New Account
+                    </a>
+                    <a href="{% url 'loans:loan_apply' %}" class="btn btn-outline-success">
+                        <i class="fas fa-hand-holding-usd me-2"></i>Apply for Loan
+                    </a>
+                    <a href="{% url 'transactions:transaction_create' %}" class="btn btn-outline-info">
+                        <i class="fas fa-exchange-alt me-2"></i>Make Transaction
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notifications -->
+        <div class="card mt-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0"><i class="fas fa-bell me-2"></i>Notifications</h5>
+                <span class="badge bg-primary">{{ notifications.count }}</span>
+            </div>
+            <div class="card-body">
+                {% if notifications %}
+                    {% for notification in notifications %}
+                    <div class="alert alert-{% if notification.notification_type == 'payment_reminder' %}warning{% else %}info{% endif %} py-2 mb-2">
+                        <small>
+                            <strong>{{ notification.subject }}</strong><br>
+                            {{ notification.message }}<br>
+                            <em class="text-muted">{{ notification.sent_date|timesince }} ago</em>
+                        </small>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted">No new notifications.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Upcoming Payments -->
+        {% if upcoming_payments %}
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0"><i class="fas fa-calendar-alt me-2"></i>Upcoming Payments</h5>
+            </div>
+            <div class="card-body">
+                {% for payment in upcoming_payments %}
+                <div class="border-start border-3 border-warning ps-3 mb-2">
+                    <small>
+                        <strong>₱{{ payment.total_payment }}</strong><br>
+                        Due: {{ payment.due_date|date:"M d, Y" }}<br>
+                        Loan #{{ payment.loan.loan_id }}
+                    </small>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

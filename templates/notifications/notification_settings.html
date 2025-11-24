@@ -1,0 +1,302 @@
+{% extends "base.html" %}
+
+{% block title %}Notification Settings - Kayamanan Bank{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="fas fa-bell me-2"></i>Notification Settings</h4>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <!-- Notification Channels -->
+                    <div class="mb-4">
+                        <h5 class="mb-3"><i class="fas fa-envelope me-2"></i>Notification Channels</h5>
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" id="email_notifications" name="email_notifications" 
+                                   {% if settings.email_enabled %}checked{% endif %}>
+                            <label class="form-check-label" for="email_notifications">
+                                <strong>Email Notifications</strong>
+                                <small class="text-muted d-block">Receive notifications via email at {{ user.email }}</small>
+                            </label>
+                        </div>
+                        
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" id="sms_notifications" name="sms_notifications"
+                                   {% if settings.sms_enabled %}checked{% endif %}>
+                            <label class="form-check-label" for="sms_notifications">
+                                <strong>SMS Notifications</strong>
+                                <small class="text-muted d-block">
+                                    {% if user.phone %}
+                                        Receive SMS notifications at {{ user.phone }}
+                                    {% else %}
+                                        <span class="text-warning">Phone number not set. <a href="{% url 'profile' %}">Update profile</a></span>
+                                    {% endif %}
+                                </small>
+                            </label>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <!-- Notification Types -->
+                    <div class="mb-4">
+                        <h5 class="mb-3"><i class="fas fa-cog me-2"></i>Notification Types</h5>
+                        
+                        <!-- Loan Notifications -->
+                        <div class="card mb-3">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0"><i class="fas fa-hand-holding-usd me-2"></i>Loan Notifications</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="loan_application_updates" name="loan_application_updates"
+                                           {% if settings.loan_application_updates %}checked{% endif %}>
+                                    <label class="form-check-label" for="loan_application_updates">
+                                        Loan Application Status Updates
+                                        <small class="text-muted d-block">When your loan application is approved, rejected, or requires additional information</small>
+                                    </label>
+                                </div>
+                                
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="payment_reminders" name="payment_reminders"
+                                           {% if settings.payment_reminders %}checked{% endif %}>
+                                    <label class="form-check-label" for="payment_reminders">
+                                        Payment Reminders
+                                        <small class="text-muted d-block">Reminders for upcoming loan payments (sent 7 days, 3 days, and 1 day before due date)</small>
+                                    </label>
+                                </div>
+                                
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="payment_confirmation" name="payment_confirmation"
+                                           {% if settings.payment_confirmation %}checked{% endif %}>
+                                    <label class="form-check-label" for="payment_confirmation">
+                                        Payment Confirmations
+                                        <small class="text-muted d-block">Confirmation when loan payments are successfully processed</small>
+                                    </label>
+                                </div>
+                                
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="loan_statement" name="loan_statement"
+                                           {% if settings.loan_statement %}checked{% endif %}>
+                                    <label class="form-check-label" for="loan_statement">
+                                        Monthly Loan Statements
+                                        <small class="text-muted d-block">Monthly summary of your loan balance and payment history</small>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Account Notifications -->
+                        <div class="card mb-3">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0"><i class="fas fa-piggy-bank me-2"></i>Account Notifications</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="large_transactions" name="large_transactions"
+                                           {% if settings.large_transactions %}checked{% endif %}>
+                                    <label class="form-check-label" for="large_transactions">
+                                        Large Transactions
+                                        <small class="text-muted d-block">Alerts for transactions over ₱10,000</small>
+                                    </label>
+                                </div>
+                                
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="low_balance" name="low_balance"
+                                           {% if settings.low_balance %}checked{% endif %}>
+                                    <label class="form-check-label" for="low_balance">
+                                        Low Balance Alerts
+                                        <small class="text-muted d-block">When your account balance falls below ₱500</small>
+                                    </label>
+                                </div>
+                                
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="deposit_confirmation" name="deposit_confirmation"
+                                           {% if settings.deposit_confirmation %}checked{% endif %}>
+                                    <label class="form-check-label" for="deposit_confirmation">
+                                        Deposit Confirmations
+                                        <small class="text-muted d-block">Confirmation when deposits are credited to your account</small>
+                                    </label>
+                                </div>
+                                
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="monthly_statement" name="monthly_statement"
+                                           {% if settings.monthly_statement %}checked{% endif %}>
+                                    <label class="form-check-label" for="monthly_statement">
+                                        Monthly Account Statements
+                                        <small class="text-muted d-block">Monthly summary of your account activity</small>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Security Notifications -->
+                        <div class="card">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0"><i class="fas fa-shield-alt me-2"></i>Security Notifications</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="login_alerts" name="login_alerts"
+                                           {% if settings.login_alerts %}checked{% endif %}>
+                                    <label class="form-check-label" for="login_alerts">
+                                        Login Alerts
+                                        <small class="text-muted d-block">Notify me when someone logs into my account from a new device</small>
+                                    </label>
+                                </div>
+                                
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="password_changes" name="password_changes"
+                                           {% if settings.password_changes %}checked{% endif %}>
+                                    <label class="form-check-label" for="password_changes">
+                                        Password Change Alerts
+                                        <small class="text-muted d-block">Notify me when my password is changed</small>
+                                    </label>
+                                </div>
+                                
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="suspicious_activity" name="suspicious_activity"
+                                           {% if settings.suspicious_activity %}checked{% endif %}>
+                                    <label class="form-check-label" for="suspicious_activity">
+                                        Suspicious Activity Alerts
+                                        <small class="text-muted d-block">Alerts for unusual account activity</small>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Frequency Settings -->
+                    <div class="mb-4">
+                        <h5 class="mb-3"><i class="fas fa-clock me-2"></i>Notification Frequency</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label for="email_frequency" class="form-label">Email Frequency</label>
+                                <select class="form-select" id="email_frequency" name="email_frequency">
+                                    <option value="immediate" {% if settings.email_frequency == 'immediate' %}selected{% endif %}>Immediately</option>
+                                    <option value="daily" {% if settings.email_frequency == 'daily' %}selected{% endif %}>Daily Digest</option>
+                                    <option value="weekly" {% if settings.email_frequency == 'weekly' %}selected{% endif %}>Weekly Summary</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="sms_frequency" class="form-label">SMS Frequency</label>
+                                <select class="form-select" id="sms_frequency" name="sms_frequency">
+                                    <option value="immediate" {% if settings.sms_frequency == 'immediate' %}selected{% endif %}>Immediately (Urgent Only)</option>
+                                    <option value="daily" {% if settings.sms_frequency == 'daily' %}selected{% endif %}>Daily Summary</option>
+                                    <option value="disabled" {% if settings.sms_frequency == 'disabled' %}selected{% endif %}>Disabled</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{% url 'notifications:notification_list' %}" class="btn btn-secondary me-md-2">Cancel</a>
+                        <button type="submit" class="btn btn-primary">Save Settings</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <!-- Notification Summary -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Notification Summary</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <p><strong>Active Channels:</strong></p>
+                    <ul class="list-unstyled">
+                        {% if settings.email_enabled %}
+                        <li><i class="fas fa-check text-success me-2"></i>Email Notifications</li>
+                        {% endif %}
+                        {% if settings.sms_enabled and user.phone %}
+                        <li><i class="fas fa-check text-success me-2"></i>SMS Notifications</li>
+                        {% elif settings.sms_enabled %}
+                        <li><i class="fas fa-exclamation-triangle text-warning me-2"></i>SMS (Phone number needed)</li>
+                        {% endif %}
+                    </ul>
+                </div>
+                
+                <div class="mb-3">
+                    <p><strong>Notification Types Enabled:</strong></p>
+                    <ul class="list-unstyled">
+                        <li><small class="text-muted">Loan Notifications: {{ enabled_loan_count }}/4</small></li>
+                        <li><small class="text-muted">Account Notifications: {{ enabled_account_count }}/4</small></li>
+                        <li><small class="text-muted">Security Notifications: {{ enabled_security_count }}/3</small></li>
+                    </ul>
+                </div>
+                
+                <div class="alert alert-info">
+                    <small>
+                        <i class="fas fa-lightbulb me-2"></i>
+                        <strong>Tip:</strong> Enable SMS for critical alerts like security events and payment reminders.
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-bolt me-2"></i>Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{% url 'notifications:notification_list' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-list me-2"></i>View Notification History
+                    </a>
+                    <a href="{% url 'profile' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-user me-2"></i>Update Contact Information
+                    </a>
+                    <button type="button" class="btn btn-outline-warning" id="test-notification">
+                        <i class="fas fa-bell me-2"></i>Send Test Notification
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block javascript %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Test notification button
+    document.getElementById('test-notification').addEventListener('click', function() {
+        // This would typically make an AJAX call to send a test notification
+        alert('Test notification would be sent to your enabled channels. In a real implementation, this would trigger an API call.');
+    });
+
+    // Disable SMS if phone number is not set and SMS is checked
+    const smsCheckbox = document.getElementById('sms_notifications');
+    const phoneWarning = document.querySelector('.text-warning');
+    
+    if (phoneWarning && smsCheckbox.checked) {
+        smsCheckbox.disabled = true;
+        smsCheckbox.checked = false;
+    }
+
+    // Show/hide frequency settings based on channel selection
+    function updateFrequencyVisibility() {
+        const emailEnabled = document.getElementById('email_notifications').checked;
+        const smsEnabled = document.getElementById('sms_notifications').checked;
+        
+        document.getElementById('email_frequency').parentElement.style.display = emailEnabled ? 'block' : 'none';
+        document.getElementById('sms_frequency').parentElement.style.display = smsEnabled ? 'block' : 'none';
+    }
+
+    document.getElementById('email_notifications').addEventListener('change', updateFrequencyVisibility);
+    document.getElementById('sms_notifications').addEventListener('change', updateFrequencyVisibility);
+    
+    // Initial update
+    updateFrequencyVisibility();
+});
+</script>
+{% endblock %}
+{% endblock %}

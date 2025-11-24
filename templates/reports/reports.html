@@ -1,0 +1,229 @@
+{% extends "base.html" %}
+
+{% block title %}Reports - Kayamanan Bank{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4"><i class="fas fa-chart-bar me-2"></i>Financial Reports</h1>
+    </div>
+</div>
+
+<!-- Report Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body text-center">
+                <i class="fas fa-file-invoice-dollar fa-3x mb-3"></i>
+                <h4>Financial Statement</h4>
+                <p class="mb-0">Income, expenses, profit/loss</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body text-center">
+                <i class="fas fa-hand-holding-usd fa-3x mb-3"></i>
+                <h4>Active Loans</h4>
+                <p class="mb-0">Current loan portfolio</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body text-center">
+                <i class="fas fa-exclamation-triangle fa-3x mb-3"></i>
+                <h4>Delinquent Accounts</h4>
+                <p class="mb-0">Overdue payments</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body text-center">
+                <i class="fas fa-chart-line fa-3x mb-3"></i>
+                <h4>Loan Repayments</h4>
+                <p class="mb-0">Payment performance</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Report Filters -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="fas fa-filter me-2"></i>Report Filters</h5>
+    </div>
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-3">
+                <label for="report_type" class="form-label">Report Type</label>
+                <select class="form-select" id="report_type" name="report_type">
+                    <option value="financial_statement" {% if request.GET.report_type == 'financial_statement' %}selected{% endif %}>Financial Statement</option>
+                    <option value="active_loans" {% if request.GET.report_type == 'active_loans' %}selected{% endif %}>Active Loans</option>
+                    <option value="delinquent_accounts" {% if request.GET.report_type == 'delinquent_accounts' %}selected{% endif %}>Delinquent Accounts</option>
+                    <option value="loan_repayments" {% if request.GET.report_type == 'loan_repayments' %}selected{% endif %}>Loan Repayments</option>
+                    <option value="client_activity" {% if request.GET.report_type == 'client_activity' %}selected{% endif %}>Client Activity</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="start_date" class="form-label">Start Date</label>
+                <input type="date" class="form-control" id="start_date" name="start_date" 
+                       value="{{ request.GET.start_date }}">
+            </div>
+            <div class="col-md-3">
+                <label for="end_date" class="form-label">End Date</label>
+                <input type="date" class="form-control" id="end_date" name="end_date" 
+                       value="{{ request.GET.end_date }}">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">&nbsp;</label>
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-primary">Generate Report</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Report Content -->
+{% if report_data %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">{{ report_title }}</h5>
+        <div class="btn-group">
+            <button type="button" class="btn btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown">
+                <i class="fas fa-download me-2"></i>Export
+            </button>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="?{{ request.GET.urlencode }}&export=pdf">PDF Format</a></li>
+                <li><a class="dropdown-item" href="?{{ request.GET.urlencode }}&export=excel">Excel Format</a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="card-body">
+        {% if report_type == 'financial_statement' %}
+            <!-- Financial Statement Content -->
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Category</th>
+                            <th>Amount</th>
+                            <th>Percentage</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="table-success">
+                            <td><strong>Total Income</strong></td>
+                            <td><strong>₱{{ report_data.total_income|floatformat:2 }}</strong></td>
+                            <td>100%</td>
+                        </tr>
+                        <tr>
+                            <td>Loan Interest Income</td>
+                            <td>₱{{ report_data.interest_income|floatformat:2 }}</td>
+                            <td>{{ report_data.interest_percentage }}%</td>
+                        </tr>
+                        <tr>
+                            <td>Fees and Charges</td>
+                            <td>₱{{ report_data.fee_income|floatformat:2 }}</td>
+                            <td>{{ report_data.fee_percentage }}%</td>
+                        </tr>
+                        <tr class="table-danger">
+                            <td><strong>Total Expenses</strong></td>
+                            <td><strong>₱{{ report_data.total_expenses|floatformat:2 }}</strong></td>
+                            <td>{{ report_data.expense_percentage }}%</td>
+                        </tr>
+                        <tr class="table-info">
+                            <td><strong>Net Profit</strong></td>
+                            <td><strong>₱{{ report_data.net_profit|floatformat:2 }}</strong></td>
+                            <td>{{ report_data.profit_percentage }}%</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        {% elif report_type == 'active_loans' %}
+            <!-- Active Loans Content -->
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Loan ID</th>
+                            <th>Client</th>
+                            <th>Amount</th>
+                            <th>Interest Rate</th>
+                            <th>Remaining Balance</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for loan in report_data.loans %}
+                        <tr>
+                            <td>#{{ loan.loan_id }}</td>
+                            <td>{{ loan.client_name }}</td>
+                            <td>₱{{ loan.loan_amount }}</td>
+                            <td>{{ loan.interest_rate }}%</td>
+                            <td>₱{{ loan.remaining_balance }}</td>
+                            <td>
+                                <span class="badge bg-{% if loan.status == 'active' %}success{% else %}warning{% endif %}">
+                                    {{ loan.status }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% else %}
+<div class="card">
+    <div class="card-body text-center py-5">
+        <i class="fas fa-chart-bar fa-4x text-muted mb-3"></i>
+        <h4>No Report Generated</h4>
+        <p class="text-muted">Select report type and date range to generate a report.</p>
+    </div>
+</div>
+{% endif %}
+
+<!-- Quick Stats -->
+<div class="row mt-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body text-center">
+                <h6 class="card-title">Total Assets</h6>
+                <h3>₱{{ total_assets|default:0|floatformat:2 }}</h3>
+                <small>Current Bank Assets</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body text-center">
+                <h6 class="card-title">Active Loans</h6>
+                <h3>{{ active_loans_count|default:0 }}</h3>
+                <small>Currently Active</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body text-center">
+                <h6 class="card-title">Delinquent Loans</h6>
+                <h3>{{ delinquent_loans_count|default:0 }}</h3>
+                <small>Overdue Payments</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body text-center">
+                <h6 class="card-title">Total Clients</h6>
+                <h3>{{ total_clients|default:0 }}</h3>
+                <small>Registered Clients</small>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

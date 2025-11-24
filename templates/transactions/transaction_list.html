@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+
+{% block title %}Transaction History - Kayamanan Bank{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="fas fa-history me-2"></i>Transaction History</h1>
+    <a href="{% url 'transactions:transaction_create' %}" class="btn btn-success">
+        <i class="fas fa-plus me-2"></i>New Transaction
+    </a>
+</div>
+
+<!-- Filters -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-3">
+                <label for="account" class="form-label">Account</label>
+                <select class="form-select" id="account" name="account">
+                    <option value="">All Accounts</option>
+                    {% for acc in accounts %}
+                    <option value="{{ acc.account_id }}" {% if request.GET.account == acc.account_id|stringformat:"i" %}selected{% endif %}>
+                        {{ acc.account_number }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="transaction_type" class="form-label">Type</label>
+                <select class="form-select" id="transaction_type" name="transaction_type">
+                    <option value="">All Types</option>
+                    <option value="deposit" {% if request.GET.transaction_type == 'deposit' %}selected{% endif %}>Deposit</option>
+                    <option value="withdrawal" {% if request.GET.transaction_type == 'withdrawal' %}selected{% endif %}>Withdrawal</option>
+                    <option value="payment" {% if request.GET.transaction_type == 'payment' %}selected{% endif %}>Payment</option>
+                    <option value="transfer" {% if request.GET.transaction_type == 'transfer' %}selected{% endif %}>Transfer</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="start_date" class="form-label">Start Date</label>
+                <input type="date" class="form-control" id="start_date" name="start_date" 
+                       value="{{ request.GET.start_date }}">
+            </div>
+            <div class="col-md-3">
+                <label for="end_date" class="form-label">End Date</label>
+                <input type="date" class="form-control" id="end_date" name="end_date" 
+                       value="{{ request.GET.end_date }}">
+            </div>
+            <div class="col-12">
+                <button type="submit" class="btn btn-primary">Apply Filters</button>
+                <a href="{% url 'transactions:transaction_list' %}" class="btn btn-secondary">Clear</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Transactions Table -->
+<div class="card">
+    <div class="card-header">
+        <h5 class="card-title mb-0">Transactions ({{ transactions.count }})</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-striped mb-0">
+                <thead>
+                    <tr>
+                        <th>Date & Time</th>
+                        <th>Account</th>
+                        <th>Description</th>
+                        <th>Type</th>
+                        <th>Amount</th>
+                        <th>Balance After</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for transaction in transactions %}
+                    <tr>
+                        <td>
+                            <small>{{ transaction.transaction_date|date:"M d, Y" }}</small><br>
+                            <small class="text-muted">{{ transaction.transaction_date|date:"H:i:s" }}</small>
+                        </td>
+                        <td>
+                            <strong>{{ transaction.account.account_number }}</strong><br>
+                            <small class="text-muted">{{ transaction.account.get_account_type_display }}</small>
+                        </td>
+                        <td>{{ transaction.description|default:"-" }}</td>
+                        <td>
+                            <span class="badge bg-{% if transaction.transaction_type == 'deposit' %}success{% elif transaction.transaction_type == 'withdrawal' %}warning{% else %}info{% endif %}">
+                                {{ transaction.get_transaction_type_display }}
+                            </span>
+                        </td>
+                        <td class="{% if transaction.transaction_type == 'deposit' %}text-success{% else %}text-danger{% endif %}">
+                            {% if transaction.transaction_type == 'deposit' %}+{% else %}-{% endif %}₱{{ transaction.amount }}
+                        </td>
+                        <td>
+                            <strong>₱{{ transaction.balance_after|default:"-" }}</strong>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center py-4">
+                            <div class="text-muted">
+                                <i class="fas fa-receipt fa-3x mb-3"></i>
+                                <h4>No transactions found</h4>
+                                <p>No transactions match your search criteria.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Pagination -->
+{% if transactions.has_other_pages %}
+<nav aria-label="Transaction pagination" class="mt-4">
+    <ul class="pagination justify-content-center">
+        {% if transactions.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ transactions.previous_page_number }}{% for key,value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Previous</a>
+        </li>
+        {% endif %}
+
+        {% for i in transactions.paginator.page_range %}
+        <li class="page-item {% if transactions.number == i %}active{% endif %}">
+            <a class="page-link" href="?page={{ i }}{% for key,value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ i }}</a>
+        </li>
+        {% endfor %}
+
+        {% if transactions.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ transactions.next_page_number }}{% for key,value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Next</a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+{% endblock %}

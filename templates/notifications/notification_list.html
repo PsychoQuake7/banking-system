@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+
+{% block title %}Notifications - Kayamanan Bank{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="fas fa-bell me-2"></i>Notifications</h1>
+    <div class="btn-group">
+        <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#sendNotificationModal">
+            <i class="fas fa-plus me-2"></i>Send Notification
+        </button>
+    </div>
+</div>
+
+<!-- Notification Filters -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-3">
+                <label for="type" class="form-label">Type</label>
+                <select class="form-select" id="type" name="type">
+                    <option value="">All Types</option>
+                    <option value="payment_reminder" {% if request.GET.type == 'payment_reminder' %}selected{% endif %}>Payment Reminder</option>
+                    <option value="loan_approved" {% if request.GET.type == 'loan_approved' %}selected{% endif %}>Loan Approved</option>
+                    <option value="due_date" {% if request.GET.type == 'due_date' %}selected{% endif %}>Due Date</option>
+                    <option value="system_alert" {% if request.GET.type == 'system_alert' %}selected{% endif %}>System Alert</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="status" class="form-label">Status</label>
+                <select class="form-select" id="status" name="status">
+                    <option value="">All Status</option>
+                    <option value="sent" {% if request.GET.status == 'sent' %}selected{% endif %}>Sent</option>
+                    <option value="pending" {% if request.GET.status == 'pending' %}selected{% endif %}>Pending</option>
+                    <option value="failed" {% if request.GET.status == 'failed' %}selected{% endif %}>Failed</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="start_date" class="form-label">From Date</label>
+                <input type="date" class="form-control" id="start_date" name="start_date" 
+                       value="{{ request.GET.start_date }}">
+            </div>
+            <div class="col-md-3">
+                <label for="end_date" class="form-label">To Date</label>
+                <input type="date" class="form-control" id="end_date" name="end_date" 
+                       value="{{ request.GET.end_date }}">
+            </div>
+            <div class="col-12">
+                <button type="submit" class="btn btn-primary">Apply Filters</button>
+                <a href="{% url 'notifications:notification_list' %}" class="btn btn-secondary">Clear</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Notifications Table -->
+<div class="card">
+    <div class="card-header">
+        <h5 class="card-title mb-0">Notifications ({{ notifications.count }})</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-striped mb-0">
+                <thead>
+                    <tr>
+                        <th>Sent Date</th>
+                        <th>Recipient</th>
+                        <th>Type</th>
+                        <th>Subject</th>
+                        <th>Message</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for notification in notifications %}
+                    <tr>
+                        <td>
+                            <small>{{ notification.sent_date|date:"M d, Y" }}</small><br>
+                            <small class="text-muted">{{ notification.sent_date|date:"H:i" }}</small>
+                        </td>
+                        <td>
+                            <strong>{{ notification.user.username }}</strong><br>
+                            <small class="text-muted">{{ notification.type }}</small>
+                        </td>
+                        <td>
+                            <span class="badge bg-{% if notification.notification_type == 'payment_reminder' %}warning{% elif notification.notification_type == 'loan_approved' %}success{% else %}info{% endif %}">
+                                {{ notification.get_notification_type_display }}
+                            </span>
+                        </td>
+                        <td>{{ notification.subject }}</td>
+                        <td>
+                            <small>{{ notification.message|truncatewords:8 }}</small>
+                            {% if notification.message|wordcount > 8 %}
+                            <a href="#" data-bs-toggle="modal" data-bs-target="#messageModal{{ notification.notification_id }}">View</a>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge bg-{% if notification.status == 'sent' %}success{% elif notification.status == 'pending' %}warning{% else %}danger{% endif %}">
+                                {{ notification.get_status_display }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="#" class="btn btn-outline-primary" title="Resend">
+                                    <i class="fas fa-redo"></i>
+                                </a>
+                                <a href="#" class="btn btn-outline-danger" title="Delete">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- Message Modal -->
+                    <div class="modal fade" id="messageModal{{ notification.notification_id }}" tabindex="-1">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Notification Message</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <p><strong>Subject:</strong> {{ notification.subject }}</p>
+                                    <p><strong>Message:</strong></p>
+                                    <div class="bg-light p-3 rounded">
+                                        {{ notification.message|linebreaks }}
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center py-4">
+                            <div class="text-muted">
+                                <i class="fas fa-bell fa-3x mb-3"></i>
+                                <h4>No notifications found</h4>
+                                <p>No notifications match your search criteria.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Send Notification Modal -->
+<div class="modal fade" id="sendNotificationModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Send Notification</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="recipient" class="form-label">Recipient</label>
+                        <select class="form-select" id="recipient" name="recipient" required>
+                            <option value="">Select User...</option>
+                            {% for user in all_users %}
+                            <option value="{{ user.user_id }}">{{ user.username }} - {{ user.email }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="notification_type" class="form-label">Type</label>
+                        <select class="form-select" id="notification_type" name="notification_type" required>
+                            <option value="">Select Type...</option>
+                            <option value="payment_reminder">Payment Reminder</option>
+                            <option value="loan_approved">Loan Approved</option>
+                            <option value="due_date">Due Date</option>
+                            <option value="system_alert">System Alert</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="subject" class="form-label">Subject</label>
+                        <input type="text" class="form-control" id="subject" name="subject" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="message" class="form-label">Message</label>
+                        <textarea class="form-control" id="message" name="message" rows="4" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Send Notification</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

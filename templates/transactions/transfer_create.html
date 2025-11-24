@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block title %}Transfer Funds - Kayamanan Bank{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card shadow">
+            <div class="card-header bg-info text-white">
+                <h4 class="mb-0"><i class="fas fa-exchange-alt me-2"></i>Transfer Funds</h4>
+            </div>
+            <div class="card-body p-4">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <!-- From Account -->
+                    <div class="mb-3">
+                        <label for="from_account" class="form-label">From Account</label>
+                        <select class="form-select" id="from_account" name="from_account" required>
+                            <option value="">Select Source Account...</option>
+                            {% for account in accounts %}
+                            <option value="{{ account.account_id }}" data-balance="{{ account.current_balance }}"
+                                    {% if request.GET.from_account == account.account_id|stringformat:"i" %}selected{% endif %}>
+                                {{ account.account_number }} - {{ account.get_account_type_display }} (₱{{ account.current_balance }})
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- To Account -->
+                    <div class="mb-3">
+                        <label for="to_account" class="form-label">To Account</label>
+                        <select class="form-select" id="to_account" name="to_account" required>
+                            <option value="">Select Destination Account...</option>
+                            {% for account in all_accounts %}
+                            <option value="{{ account.account_id }}">
+                                {{ account.account_number }} - {{ account.client.first_name }} {{ account.client.last_name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="amount" class="form-label">Transfer Amount (₱)</label>
+                        <input type="number" class="form-control" id="amount" name="amount" 
+                               min="1" step="0.01" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <input type="text" class="form-control" id="description" name="description" 
+                               value="Fund transfer" placeholder="Enter transfer description">
+                    </div>
+
+                    <!-- Transfer Preview -->
+                    <div class="card bg-light mb-4">
+                        <div class="card-body">
+                            <h6>Transfer Preview</h6>
+                            <div id="transfer-preview">
+                                <p class="mb-1">Source Balance: <span id="source-balance">-</span></p>
+                                <p class="mb-1">Transfer Amount: <span id="preview-amount">₱0.00</span></p>
+                                <p class="mb-0">Remaining Balance: <span id="remaining-balance">-</span></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{% url 'transactions:transaction_list' %}" class="btn btn-secondary me-md-2">Cancel</a>
+                        <button type="submit" class="btn btn-info">Process Transfer</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block javascript %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const fromAccountSelect = document.getElementById('from_account');
+    const amountInput = document.getElementById('amount');
+    const sourceBalanceSpan = document.getElementById('source-balance');
+    const previewAmountSpan = document.getElementById('preview-amount');
+    const remainingBalanceSpan = document.getElementById('remaining-balance');
+
+    function updateTransferPreview() {
+        const selectedOption = fromAccountSelect.options[fromAccountSelect.selectedIndex];
+        const sourceBalance = selectedOption ? parseFloat(selectedOption.dataset.balance) : 0;
+        const transferAmount = parseFloat(amountInput.value) || 0;
+        
+        sourceBalanceSpan.textContent = '₱' + sourceBalance.toFixed(2);
+        previewAmountSpan.textContent = '₱' + transferAmount.toFixed(2);
+        
+        if (sourceBalance > 0 && transferAmount > 0) {
+            const remainingBalance = sourceBalance - transferAmount;
+            remainingBalanceSpan.textContent = '₱' + remainingBalance.toFixed(2);
+            remainingBalanceSpan.className = remainingBalance < 0 ? 'text-danger' : 'text-success';
+        } else {
+            remainingBalanceSpan.textContent = '-';
+        }
+    }
+
+    fromAccountSelect.addEventListener('change', updateTransferPreview);
+    amountInput.addEventListener('input', updateTransferPreview);
+    
+    // Initial update
+    updateTransferPreview();
+});
+</script>
+{% endblock %}
+{% endblock %}

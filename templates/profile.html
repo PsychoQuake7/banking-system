@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+
+{% block title %}My Profile - Kayamanan Bank{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0"><i class="fas fa-user me-2"></i>Profile Information</h4>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="first_name" class="form-label">First Name</label>
+                            <input type="text" class="form-control" id="first_name" name="first_name" 
+                                   value="{{ client.first_name }}" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="last_name" class="form-label">Last Name</label>
+                            <input type="text" class="form-control" id="last_name" name="last_name" 
+                                   value="{{ client.last_name }}" required>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" name="email" 
+                                   value="{{ user.email }}" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="phone" class="form-label">Phone</label>
+                            <input type="tel" class="form-control" id="phone" name="phone" 
+                                   value="{{ user.phone|default:'' }}">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="date_of_birth" class="form-label">Date of Birth</label>
+                        <input type="date" class="form-control" id="date_of_birth" name="date_of_birth" 
+                               value="{{ client.date_of_birth|date:'Y-m-d' }}" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="address" class="form-label">Address</label>
+                        <textarea class="form-control" id="address" name="address" rows="3" required>{{ client.address }}</textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="monthly_income" class="form-label">Monthly Income (₱)</label>
+                        <input type="number" class="form-control" id="monthly_income" name="monthly_income" 
+                               value="{{ client.monthly_income }}" step="1000">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="id_document" class="form-label">ID Document</label>
+                        {% if client.id_document_path %}
+                        <div class="mb-2">
+                            <a href="{{ client.id_document_path.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-eye me-1"></i>View Current Document
+                            </a>
+                        </div>
+                        {% endif %}
+                        <input type="file" class="form-control" id="id_document" name="id_document" accept=".pdf,.jpg,.png">
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Update Profile</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <!-- Account Summary -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Account Summary</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Member Since:</strong><br>
+                {{ user.created_at|date:"F d, Y" }}</p>
+                
+                <p><strong>Credit Score:</strong><br>
+                <span class="badge bg-{% if client.credit_score >= 800 %}success{% elif client.credit_score >= 700 %}info{% elif client.credit_score >= 600 %}warning{% else %}danger{% endif %}">
+                    {{ client.credit_score }}
+                </span></p>
+                
+                <p><strong>Total Accounts:</strong><br>
+                {{ accounts_count }}</p>
+                
+                <p><strong>Active Loans:</strong><br>
+                {{ active_loans_count }}</p>
+            </div>
+        </div>
+
+        <!-- Security -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-shield-alt me-2"></i>Security</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{% url 'password_change' %}" class="btn btn-outline-warning">
+                        <i class="fas fa-key me-2"></i>Change Password
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

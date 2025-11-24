@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+
+{% block title %}Make Transaction - Kayamanan Bank{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card shadow">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0"><i class="fas fa-exchange-alt me-2"></i>Make Transaction</h4>
+            </div>
+            <div class="card-body p-4">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="account" class="form-label">Account</label>
+                        <select class="form-select" id="account" name="account" required>
+                            <option value="">Select Account...</option>
+                            {% for acc in accounts %}
+                            <option value="{{ acc.account_id }}" 
+                                    {% if request.GET.account == acc.account_id|stringformat:"i" %}selected{% endif %}>
+                                {{ acc.account_number }} - {{ acc.get_account_type_display }} (₱{{ acc.current_balance }})
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="transaction_type" class="form-label">Transaction Type</label>
+                        <select class="form-select" id="transaction_type" name="transaction_type" required>
+                            <option value="">Select Type...</option>
+                            <option value="deposit" {% if request.GET.type == 'deposit' %}selected{% endif %}>Deposit</option>
+                            <option value="withdrawal" {% if request.GET.type == 'withdrawal' %}selected{% endif %}>Withdrawal</option>
+                            <option value="payment">Loan Payment</option>
+                            <option value="transfer">Transfer to Another Account</option>
+                        </select>
+                    </div>
+
+                    <!-- Loan Selection (for payments) -->
+                    <div class="mb-3" id="loan-field" style="display: none;">
+                        <label for="loan" class="form-label">Select Loan</label>
+                        <select class="form-select" id="loan" name="loan">
+                            <option value="">Select Loan...</option>
+                            {% for loan in active_loans %}
+                            <option value="{{ loan.loan_id }}">
+                                Loan #{{ loan.loan_id }} - ₱{{ loan.remaining_balance }} remaining
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Transfer Account (for transfers) -->
+                    <div class="mb-3" id="transfer-field" style="display: none;">
+                        <label for="to_account" class="form-label">Transfer To Account</label>
+                        <select class="form-select" id="to_account" name="to_account">
+                            <option value="">Select Destination Account...</option>
+                            {% for acc in all_accounts %}
+                            <option value="{{ acc.account_id }}">
+                                {{ acc.account_number }} - {{ acc.client.first_name }} {{ acc.client.last_name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="amount" class="form-label">Amount (₱)</label>
+                        <input type="number" class="form-control" id="amount" name="amount" 
+                               min="1" step="0.01" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description" name="description" 
+                                  rows="3" placeholder="Enter transaction description..."></textarea>
+                    </div>
+
+                    <!-- Current Balance Display -->
+                    <div class="alert alert-info">
+                        <strong>Current Balance:</strong> 
+                        <span id="current-balance">Select an account to view balance</span>
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <i class="fas fa-check me-2"></i>Process Transaction
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block javascript %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const accountSelect = document.getElementById('account');
+    const transactionTypeSelect = document.getElementById('transaction_type');
+    const loanField = document.getElementById('loan-field');
+    const transferField = document.getElementById('transfer-field');
+    const currentBalanceSpan = document.getElementById('current-balance');
+    
+    const accountBalances = {
+        {% for acc in accounts %}
+        '{{ acc.account_id }}': '₱{{ acc.current_balance }}',
+        {% endfor %}
+    };
+
+    // Update current balance when account is selected
+    accountSelect.addEventListener('change', function() {
+        const balance = accountBalances[this.value] || 'Select an account to view balance';
+        currentBalanceSpan.textContent = balance;
+    });
+
+    // Show/hide loan and transfer fields based on transaction type
+    transactionTypeSelect.addEventListener('change', function() {
+        const type = this.value;
+        
+        // Hide all optional fields first
+        loanField.style.display = 'none';
+        transferField.style.display = 'none';
+        
+        // Show relevant fields
+        if (type === 'payment') {
+            loanField.style.display = 'block';
+            loanField.querySelector('select').required = true;
+        } else if (type === 'transfer') {
+            transferField.style.display = 'block';
+            transferField.querySelector('select').required = true;
+        } else {
+            // Remove required attribute for hidden fields
+            loanField.querySelector('select').required = false;
+            transferField.querySelector('select').required = false;
+        }
+    });
+
+    // Trigger change event on page load if type is preset
+    transactionTypeSelect.dispatchEvent(new Event('change'));
+});
+</script>
+{% endblock %}
+{% endblock %}

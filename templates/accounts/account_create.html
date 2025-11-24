@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+
+{% block title %}Open New Account - Kayamanan Bank{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="fas fa-plus-circle me-2"></i>Open New Account</h4>
+            </div>
+            <div class="card-body p-4">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Account Type</label>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-check card-option">
+                                    <input class="form-check-input" type="radio" name="account_type" 
+                                           id="savings" value="savings" checked>
+                                    <label class="form-check-label card-option-label" for="savings">
+                                        <div class="card">
+                                            <div class="card-body text-center">
+                                                <i class="fas fa-piggy-bank fa-2x text-success mb-2"></i>
+                                                <h6>Savings Account</h6>
+                                                <small class="text-muted">Earn 2.5% interest</small>
+                                            </div>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check card-option">
+                                    <input class="form-check-input" type="radio" name="account_type" 
+                                           id="checking" value="checking">
+                                    <label class="form-check-label card-option-label" for="checking">
+                                        <div class="card">
+                                            <div class="card-body text-center">
+                                                <i class="fas fa-money-check-alt fa-2x text-primary mb-2"></i>
+                                                <h6>Checking Account</h6>
+                                                <small class="text-muted">No interest, unlimited transactions</small>
+                                            </div>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="initial_deposit" class="form-label">Initial Deposit (₱)</label>
+                        <input type="number" class="form-control" id="initial_deposit" name="initial_deposit" 
+                               min="500" step="100" value="1000" required>
+                        <div class="form-text">Minimum initial deposit: ₱500</div>
+                    </div>
+
+                    <!-- Terms and Conditions -->
+                    <div class="form-check mb-4">
+                        <input class="form-check-input" type="checkbox" id="terms" name="terms" required>
+                        <label class="form-check-label" for="terms">
+                            I agree to the <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal">terms and conditions</a>
+                            of account opening.
+                        </label>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{% url 'accounts:account_list' %}" class="btn btn-secondary me-md-2">Cancel</a>
+                        <button type="submit" class="btn btn-primary">Open Account</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Terms Modal -->
+<div class="modal fade" id="termsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Account Terms and Conditions</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <h6>Savings Account</h6>
+                <ul>
+                    <li>Minimum balance: ₱500</li>
+                    <li>Interest rate: 2.5% per annum, compounded monthly</li>
+                    <li>Maximum of 5 free withdrawals per month</li>
+                </ul>
+                
+                <h6>Checking Account</h6>
+                <ul>
+                    <li>Minimum balance: ₱1,000</li>
+                    <li>No interest earned</li>
+                    <li>Unlimited transactions</li>
+                    <li>Checkbook provided</li>
+                </ul>
+                
+                <p><strong>General Terms:</strong></p>
+                <ul>
+                    <li>Accounts are subject to bank approval</li>
+                    <li>Monthly maintenance fees may apply</li>
+                    <li>Transaction limits are subject to change</li>
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_css %}
+<style>
+.card-option .form-check-input {
+    position: absolute;
+    opacity: 0;
+}
+
+.card-option-label .card {
+    border: 2px solid #dee2e6;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.card-option .form-check-input:checked + .card-option-label .card {
+    border-color: #0d6efd;
+    background-color: #f8f9fa;
+}
+</style>
+{% endblock %}
+{% endblock %}

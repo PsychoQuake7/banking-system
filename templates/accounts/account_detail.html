@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+
+{% block title %}Account {{ account.account_number }} - Kayamanan Bank{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <!-- Account Summary -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">
+                    {% if account.account_type == 'savings' %}
+                    <i class="fas fa-piggy-bank text-success me-2"></i>
+                    {% else %}
+                    <i class="fas fa-money-check-alt text-primary me-2"></i>
+                    {% endif %}
+                    {{ account.get_account_type_display }} Account
+                </h4>
+                <span class="badge bg-{% if account.is_active %}success{% else %}secondary{% endif %}">
+                    {{ account.is_active|yesno:"Active,Inactive" }}
+                </span>
+            </div>
+            <div class="card-body">
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <p><strong>Account Number:</strong><br>
+                        <span class="h5 text-monospace">{{ account.account_number }}</span></p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Current Balance:</strong><br>
+                        <span class="h3 text-success">₱{{ account.current_balance }}</span></p>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-4">
+                        <p><strong>Interest Rate:</strong><br>
+                        <span class="h5">{{ account.interest_rate }}%</span></p>
+                    </div>
+                    <div class="col-md-4">
+                        <p><strong>Date Opened:</strong><br>
+                        <span class="h5">{{ account.created_at|date:"F d, Y" }}</span></p>
+                    </div>
+                    <div class="col-md-4">
+                        <p><strong>Account Type:</strong><br>
+                        <span class="h5">{{ account.get_account_type_display }}</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Interest Accrual History -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Interest Accrual History</h5>
+            </div>
+            <div class="card-body">
+                {% if interest_accruals %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Balance Snapshot</th>
+                                <th>Interest Earned</th>
+                                <th>Compounded</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for accrual in interest_accruals %}
+                            <tr>
+                                <td>{{ accrual.accrual_date|date:"M d, Y" }}</td>
+                                <td>₱{{ accrual.balance_snapshot }}</td>
+                                <td class="text-success">+₱{{ accrual.interest_earned }}</td>
+                                <td>
+                                    <span class="badge bg-{% if accrual.is_compounded %}success{% else %}secondary{% endif %}">
+                                        {{ accrual.is_compounded|yesno:"Yes,No" }}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">No interest accruals recorded yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <!-- Quick Actions -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-bolt me-2"></i>Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{% url 'transactions:transaction_create' %}?account={{ account.account_id }}&type=deposit" 
+                       class="btn btn-success">
+                        <i class="fas fa-plus me-2"></i>Make Deposit
+                    </a>
+                    <a href="{% url 'transactions:transaction_create' %}?account={{ account.account_id }}&type=withdrawal" 
+                       class="btn btn-warning">
+                        <i class="fas fa-minus me-2"></i>Make Withdrawal
+                    </a>
+                    <a href="{% url 'transactions:transfer_create' %}?from_account={{ account.account_id }}" 
+                       class="btn btn-info">
+                        <i class="fas fa-exchange-alt me-2"></i>Transfer Funds
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Interest Summary -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-calculator me-2"></i>Interest Summary</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Total Interest Earned:</strong><br>
+                <span class="h5 text-success">₱{{ total_interest_earned|default:0 }}</span></p>
+                
+                <p><strong>Current Rate:</strong><br>
+                <span class="h6">{{ account.interest_rate }}% per annum</span></p>
+                
+                <p><strong>Next Compounding:</strong><br>
+                <span class="h6">End of Month</span></p>
+            </div>
+        </div>
+
+        <!-- Account Statistics -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Account Statistics</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Total Deposits:</strong> ₱{{ total_deposits|default:0 }}</p>
+                <p><strong>Total Withdrawals:</strong> ₱{{ total_withdrawals|default:0 }}</p>
+                <p><strong>Transactions:</strong> {{ transaction_count|default:0 }}</p>
+                <p><strong>Average Balance:</strong> ₱{{ average_balance|default:0 }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

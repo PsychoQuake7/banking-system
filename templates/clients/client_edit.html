@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Client #{{ client.client_id }} - Kayamanan Bank{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="fas fa-edit me-2"></i>Edit Client</h4>
+            </div>
+            <div class="card-body p-4">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="first_name" class="form-label">First Name</label>
+                            <input type="text" class="form-control" id="first_name" name="first_name" 
+                                   value="{{ client.first_name }}" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="last_name" class="form-label">Last Name</label>
+                            <input type="text" class="form-control" id="last_name" name="last_name" 
+                                   value="{{ client.last_name }}" required>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" name="email" 
+                                   value="{{ client.user.email }}" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="phone" class="form-label">Phone</label>
+                            <input type="tel" class="form-control" id="phone" name="phone" 
+                                   value="{{ client.user.phone|default:'' }}">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="date_of_birth" class="form-label">Date of Birth</label>
+                        <input type="date" class="form-control" id="date_of_birth" name="date_of_birth" 
+                               value="{{ client.date_of_birth|date:'Y-m-d' }}" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="address" class="form-label">Address</label>
+                        <textarea class="form-control" id="address" name="address" rows="3" required>{{ client.address }}</textarea>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="monthly_income" class="form-label">Monthly Income (₱)</label>
+                            <input type="number" class="form-control" id="monthly_income" name="monthly_income" 
+                                   value="{{ client.monthly_income }}" step="1000" min="0">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="credit_score" class="form-label">Credit Score</label>
+                            <input type="number" class="form-control" id="credit_score" name="credit_score" 
+                                   value="{{ client.credit_score }}" min="300" max="850">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Account Status</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="is_active" name="is_active" 
+                                   {% if client.user.is_active %}checked{% endif %}>
+                            <label class="form-check-label" for="is_active">
+                                Active Client Account
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="id_document" class="form-label">ID Document</label>
+                        {% if client.id_document_path %}
+                        <div class="mb-2">
+                            <a href="{{ client.id_document_path.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-eye me-1"></i>View Current Document
+                            </a>
+                        </div>
+                        {% endif %}
+                        <input type="file" class="form-control" id="id_document" name="id_document" accept=".pdf,.jpg,.png">
+                        <div class="form-text">Leave empty to keep current document</div>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{% url 'clients:client_detail' client.client_id %}" class="btn btn-secondary me-md-2">Cancel</a>
+                        <button type="submit" class="btn btn-primary">Update Client</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block title %}Amortization Schedule - Loan #{{ loan.loan_id }} - Kayamanan Bank{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="fas fa-calendar-alt me-2"></i>Amortization Schedule</h1>
+    <div class="btn-group">
+        <button onclick="window.print()" class="btn btn-outline-primary">
+            <i class="fas fa-print me-2"></i>Print Schedule
+        </button>
+        <a href="{% url 'loans:loan_detail' loan.loan_id %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Back to Loan
+        </a>
+    </div>
+</div>
+
+<!-- Loan Summary -->
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-3">
+                <p><strong>Loan ID:</strong><br>#{{ loan.loan_id }}</p>
+            </div>
+            <div class="col-md-3">
+                <p><strong>Loan Amount:</strong><br>₱{{ loan.loan_amount }}</p>
+            </div>
+            <div class="col-md-3">
+                <p><strong>Interest Rate:</strong><br>{{ loan.interest_rate }}%</p>
+            </div>
+            <div class="col-md-3">
+                <p><strong>Term:</strong><br>{{ loan.term_months }} months</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Amortization Table -->
+<div class="card">
+    <div class="card-header">
+        <h5 class="card-title mb-0">Payment Schedule</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-striped mb-0">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Due Date</th>
+                        <th>Principal</th>
+                        <th>Interest</th>
+                        <th>Total Payment</th>
+                        <th>Remaining Balance</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for payment in amortization_schedule %}
+                    <tr class="{% if payment.status == 'overdue' %}table-danger{% elif payment.status == 'paid' %}table-success{% endif %}">
+                        <td>{{ payment.installment_number }}</td>
+                        <td>{{ payment.due_date|date:"M d, Y" }}</td>
+                        <td>₱{{ payment.principal_amount }}</td>
+                        <td>₱{{ payment.interest_amount }}</td>
+                        <td><strong>₱{{ payment.total_payment }}</strong></td>
+                        <td>₱{{ payment.remaining_balance }}</td>
+                        <td>
+                            <span class="badge bg-{% if payment.status == 'paid' %}success{% elif payment.status == 'overdue' %}danger{% else %}warning{% endif %}">
+                                {{ payment.get_status_display }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Summary Statistics -->
+<div class="row mt-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body text-center">
+                <h4>₱{{ total_principal|floatformat:2 }}</h4>
+                <p class="mb-0">Total Principal</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body text-center">
+                <h4>₱{{ total_interest|floatformat:2 }}</h4>
+                <p class="mb-0">Total Interest</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body text-center">
+                <h4>₱{{ total_payments|floatformat:2 }}</h4>
+                <p class="mb-0">Total Payments</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body text-center">
+                <h4>{{ paid_count }}/{{ loan.term_months }}</h4>
+                <p class="mb-0">Payments Made</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_css %}
+<style>
+@media print {
+    .btn-group, .card-header .btn {
+        display: none !important;
+    }
+    .card {
+        border: none !important;
+        box-shadow: none !important;
+    }
+}
+</style>
+{% endblock %}
+{% endblock %}

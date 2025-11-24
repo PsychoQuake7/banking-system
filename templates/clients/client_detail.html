@@ -1,0 +1,199 @@
+{% extends "base.html" %}
+
+{% block title %}Client #{{ client.client_id }} - Kayamanan Bank{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <!-- Client Information -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="mb-0"><i class="fas fa-user me-2"></i>Client Profile</h4>
+                <span class="badge bg-{% if client.user.is_active %}success{% else %}secondary{% endif %}">
+                    {{ client.user.is_active|yesno:"Active,Inactive" }}
+                </span>
+            </div>
+            <div class="card-body">
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <p><strong>Full Name:</strong><br>
+                        <span class="h4">{{ client.first_name }} {{ client.last_name }}</span></p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Client ID:</strong><br>
+                        <span class="h4">#{{ client.client_id }}</span></p>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Date of Birth:</strong><br>
+                        {{ client.date_of_birth|date:"F d, Y" }}</p>
+                        
+                        <p><strong>Monthly Income:</strong><br>
+                        <span class="h5">₱{{ client.monthly_income|floatformat:2 }}</span></p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Credit Score:</strong><br>
+                        <span class="badge bg-{% if client.credit_score >= 800 %}success{% elif client.credit_score >= 700 %}info{% elif client.credit_score >= 600 %}warning{% else %}danger{% endif %} fs-6">
+                            {{ client.credit_score }}
+                        </span></p>
+                        
+                        <p><strong>Member Since:</strong><br>
+                        {{ client.created_at|date:"F d, Y" }}</p>
+                    </div>
+                </div>
+
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <p><strong>Address:</strong><br>
+                        {{ client.address|linebreaks }}</p>
+                    </div>
+                </div>
+
+                <!-- Contact Information -->
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <p><strong>Email:</strong><br>
+                        {{ client.user.email }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Phone:</strong><br>
+                        {{ client.user.phone|default:"Not provided" }}</p>
+                    </div>
+                </div>
+
+                <!-- ID Document -->
+                {% if client.id_document_path %}
+                <div class="mt-3">
+                    <p><strong>ID Document:</strong></p>
+                    <a href="{{ client.id_document_path.url }}" target="_blank" class="btn btn-outline-primary">
+                        <i class="fas fa-eye me-2"></i>View ID Document
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Accounts Summary -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-piggy-bank me-2"></i>Accounts Summary</h5>
+            </div>
+            <div class="card-body">
+                {% if accounts %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Account Number</th>
+                                <th>Type</th>
+                                <th>Balance</th>
+                                <th>Interest Rate</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for account in accounts %}
+                            <tr>
+                                <td>{{ account.account_number }}</td>
+                                <td>{{ account.get_account_type_display }}</td>
+                                <td>₱{{ account.current_balance }}</td>
+                                <td>{{ account.interest_rate }}%</td>
+                                <td>
+                                    <span class="badge bg-{% if account.is_active %}success{% else %}secondary{% endif %}">
+                                        {{ account.is_active|yesno:"Active,Inactive" }}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">No accounts found for this client.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <!-- Quick Stats -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Client Statistics</h5>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    <div class="display-4 text-primary">{{ accounts|length }}</div>
+                    <p class="text-muted">Total Accounts</p>
+                </div>
+                
+                <div class="text-center mb-4">
+                    <div class="display-4 text-success">₱{{ total_balance|default:0|floatformat:2 }}</div>
+                    <p class="text-muted">Total Balance</p>
+                </div>
+                
+                <div class="text-center mb-4">
+                    <div class="display-4 text-warning">{{ active_loans_count }}</div>
+                    <p class="text-muted">Active Loans</p>
+                </div>
+                
+                <div class="text-center">
+                    <div class="display-4 text-info">{{ total_transactions }}</div>
+                    <p class="text-muted">Total Transactions</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-cog me-2"></i>Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{% url 'clients:client_edit' client.client_id %}" class="btn btn-outline-primary">
+                        <i class="fas fa-edit me-2"></i>Edit Client
+                    </a>
+                    <a href="{% url 'accounts:account_create' %}?client={{ client.client_id }}" class="btn btn-outline-success">
+                        <i class="fas fa-plus me-2"></i>Open New Account
+                    </a>
+                    <a href="{% url 'loans:loan_application_list' %}?client={{ client.client_id }}" class="btn btn-outline-info">
+                        <i class="fas fa-hand-holding-usd me-2"></i>View Loan Applications
+                    </a>
+                    <a href="{% url 'clients:client_list' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Clients
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Risk Assessment -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-shield-alt me-2"></i>Risk Assessment</h5>
+            </div>
+            <div class="card-body">
+                <div class="progress mb-2" style="height: 25px;">
+                    <div class="progress-bar {% if client.credit_score >= 700 %}bg-success{% elif client.credit_score >= 600 %}bg-warning{% else %}bg-danger{% endif %}" 
+                         style="width: {{ client.credit_score / 10 }}%">
+                        {{ client.credit_score }}/1000
+                    </div>
+                </div>
+                <small class="text-muted">
+                    {% if client.credit_score >= 800 %}
+                    Excellent - Low Risk
+                    {% elif client.credit_score >= 700 %}
+                    Good - Moderate Risk
+                    {% elif client.credit_score >= 600 %}
+                    Fair - Medium Risk
+                    {% else %}
+                    Poor - High Risk
+                    {% endif %}
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

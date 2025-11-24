@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Kayamanan Bank{% endblock %}</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <style>
+        .navbar-brand {
+            font-weight: bold;
+            font-size: 1.5rem;
+        }
+        
+        .account-card {
+            transition: transform 0.2s ease-in-out;
+        }
+        
+        .account-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .progress {
+            border-radius: 10px;
+        }
+        
+        .progress-bar {
+            border-radius: 10px;
+        }
+        
+        .card-header {
+            border-bottom: 2px solid rgba(0,0,0,0.1);
+        }
+        
+        .btn {
+            border-radius: 8px;
+        }
+        
+        .table th {
+            border-top: none;
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .badge {
+            font-size: 0.75em;
+        }
+    </style>
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'dashboard' %}">
+                <i class="fas fa-university me-2"></i>Kayamanan Bank
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    {% if user.is_authenticated %}
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" 
+                               href="{% url 'dashboard' %}">
+                                <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if 'accounts' in request.resolver_match.app_name %}active{% endif %}" 
+                               href="{% url 'accounts:account_list' %}">
+                                <i class="fas fa-piggy-bank me-1"></i>My Accounts
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if 'transactions' in request.resolver_match.app_name %}active{% endif %}" 
+                               href="{% url 'transactions:transaction_list' %}">
+                                <i class="fas fa-exchange-alt me-1"></i>Transactions
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if 'loans' in request.resolver_match.app_name %}active{% endif %}" 
+                               href="{% url 'loans:loan_list' %}">
+                                <i class="fas fa-hand-holding-usd me-1"></i>Loans
+                            </a>
+                        </li>
+                        
+                        {% if user.role in 'admin,staff' %}
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle {% if 'clients' in request.resolver_match.app_name or 'reports' in request.resolver_match.app_name or 'audit' in request.resolver_match.app_name %}active{% endif %}" 
+                               href="#" role="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-cog me-1"></i>Management
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <a class="dropdown-item {% if 'clients' in request.resolver_match.app_name %}active{% endif %}" 
+                                       href="{% url 'clients:client_list' %}">
+                                        <i class="fas fa-users me-2"></i>Client Management
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item {% if 'loans' in request.resolver_match.app_name and 'application_list' in request.resolver_match.url_name %}active{% endif %}" 
+                                       href="{% url 'loans:loan_application_list' %}">
+                                        <i class="fas fa-tasks me-2"></i>Loan Applications
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item {% if 'reports' in request.resolver_match.app_name %}active{% endif %}" 
+                                       href="{% url 'reports:reports' %}">
+                                        <i class="fas fa-chart-bar me-2"></i>Reports
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item {% if 'audit' in request.resolver_match.app_name %}active{% endif %}" 
+                                       href="{% url 'audit:audit_logs' %}">
+                                        <i class="fas fa-clipboard-list me-2"></i>Audit Logs
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item {% if 'notifications' in request.resolver_match.app_name %}active{% endif %}" 
+                                       href="{% url 'notifications:notification_list' %}">
+                                        <i class="fas fa-bell me-2"></i>Notifications
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                        {% endif %}
+                    {% endif %}
+                </ul>
+                
+                <ul class="navbar-nav">
+                    {% if user.is_authenticated %}
+                        <!-- Notifications Bell -->
+                        <li class="nav-item dropdown">
+                            <a class="nav-link position-relative" href="#" role="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-bell"></i>
+                                {% if unread_notifications_count > 0 %}
+                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                    {{ unread_notifications_count }}
+                                    <span class="visually-hidden">unread notifications</span>
+                                </span>
+                                {% endif %}
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><h6 class="dropdown-header">Notifications</h6></li>
+                                {% if recent_notifications %}
+                                    {% for notification in recent_notifications %}
+                                    <li>
+                                        <a class="dropdown-item" href="#">
+                                            <div class="d-flex w-100 justify-content-between">
+                                                <small class="text-muted">{{ notification.sent_date|timesince }} ago</small>
+                                            </div>
+                                            <strong>{{ notification.subject }}</strong>
+                                            <p class="mb-1 small">{{ notification.message|truncatewords:10 }}</p>
+                                        </a>
+                                    </li>
+                                    {% endfor %}
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item text-center" href="{% url 'notifications:notification_list' %}">View All</a></li>
+                                {% else %}
+                                    <li><a class="dropdown-item text-muted" href="#">No new notifications</a></li>
+                                {% endif %}
+                            </ul>
+                        </li>
+                        
+                        <!-- User Menu -->
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-user me-1"></i>{{ user.username }}
+                                <span class="badge bg-light text-dark ms-1">{{ user.get_role_display }}</span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'profile' %}">
+                                        <i class="fas fa-user-circle me-2"></i>My Profile
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'password_change' %}">
+                                        <i class="fas fa-key me-2"></i>Change Password
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a class="dropdown-item text-danger" href="{% url 'logout' %}">
+                                        <i class="fas fa-sign-out-alt me-2"></i>Logout
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'login' %}">
+                                <i class="fas fa-sign-in-alt me-1"></i>Login
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'register' %}">
+                                <i class="fas fa-user-plus me-1"></i>Register
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Messages/Alerts -->
+    {% if messages %}
+    <div class="container mt-3">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            <div class="d-flex align-items-center">
+                <i class="fas 
+                    {% if message.tags == 'success' %}fa-check-circle
+                    {% elif message.tags == 'error' or message.tags == 'danger' %}fa-exclamation-circle
+                    {% elif message.tags == 'warning' %}fa-exclamation-triangle
+                    {% else %}fa-info-circle{% endif %}
+                me-2"></i>
+                <div>{{ message }}</div>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Main Content -->
+    <main class="container mt-4 mb-5">
+        {% block content %}
+        <!-- Content will be injected here by child templates -->
+        {% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-4 mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5><i class="fas fa-university me-2"></i>Kayamanan Bank</h5>
+                    <p class="mb-2">Secure Banking for a Better Tomorrow</p>
+                    <small class="text-muted">
+                        <i class="fas fa-shield-alt me-1"></i>Your security is our priority
+                    </small>
+                </div>
+                <div class="col-md-3">
+                    <h6>Quick Links</h6>
+                    <ul class="list-unstyled">
+                        <li><a href="{% url 'dashboard' %}" class="text-muted text-decoration-none">Dashboard</a></li>
+                        <li><a href="{% url 'accounts:account_list' %}" class="text-muted text-decoration-none">Accounts</a></li>
+                        <li><a href="{% url 'loans:loan_list' %}" class="text-muted text-decoration-none">Loans</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-3">
+                    <h6>Contact Info</h6>
+                    <ul class="list-unstyled text-muted">
+                        <li><i class="fas fa-phone me-2"></i> (02) 8123-4567</li>
+                        <li><i class="fas fa-envelope me-2"></i> support@kayamananbank.com</li>
+                        <li><i class="fas fa-clock me-2"></i> Mon-Fri: 8AM-6PM</li>
+                    </ul>
+                </div>
+            </div>
+            <hr class="my-4">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <small class="text-muted">
+                        &copy; 2024 Kayamanan Bank. All rights reserved.
+                    </small>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <small class="text-muted">
+                        <i class="fas fa-lock me-1"></i>256-bit SSL Encryption
+                    </small>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap & JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JavaScript -->
+    <script>
+        // Auto-dismiss alerts after 5 seconds
+        document.addEventListener('DOMContentLoaded', function() {
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(function(alert) {
+                setTimeout(function() {
+                    const bsAlert = new bootstrap.Alert(alert);
+                    bsAlert.close();
+                }, 5000);
+            });
+            
+            // Add active class to current page in navigation
+            const currentPath = window.location.pathname;
+            const navLinks = document.querySelectorAll('.nav-link');
+            navLinks.forEach(link => {
+                if (link.getAttribute('href') === currentPath) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
+    
+    {% block javascript %}{% endblock %}
+</body>
+</html>

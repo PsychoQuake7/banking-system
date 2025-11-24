@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}My Accounts - Kayamanan Bank{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="fas fa-piggy-bank me-2"></i>My Accounts</h1>
+    <a href="{% url 'accounts:account_create' %}" class="btn btn-primary">
+        <i class="fas fa-plus me-2"></i>Open New Account
+    </a>
+</div>
+
+<div class="row">
+    {% for account in accounts %}
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card h-100 account-card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">
+                    {% if account.account_type == 'savings' %}
+                    <i class="fas fa-piggy-bank text-success me-2"></i>
+                    {% else %}
+                    <i class="fas fa-money-check-alt text-primary me-2"></i>
+                    {% endif %}
+                    {{ account.get_account_type_display }}
+                </h5>
+                <span class="badge bg-{% if account.is_active %}success{% else %}secondary{% endif %}">
+                    {{ account.is_active|yesno:"Active,Inactive" }}
+                </span>
+            </div>
+            <div class="card-body">
+                <p class="card-text">
+                    <strong>Account Number:</strong><br>
+                    <span class="h5 text-monospace">{{ account.account_number }}</span>
+                </p>
+                <p class="card-text">
+                    <strong>Current Balance:</strong><br>
+                    <span class="h4 text-success">₱{{ account.current_balance }}</span>
+                </p>
+                <p class="card-text">
+                    <strong>Interest Rate:</strong><br>
+                    <span class="h6">{{ account.interest_rate }}%</span>
+                </p>
+                <p class="card-text">
+                    <small class="text-muted">
+                        Created: {{ account.created_at|date:"M d, Y" }}
+                    </small>
+                </p>
+            </div>
+            <div class="card-footer">
+                <div class="btn-group w-100">
+                    <a href="{% url 'accounts:account_detail' account.account_id %}" class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-eye me-1"></i>View
+                    </a>
+                    <a href="{% url 'transactions:transaction_create' %}?account={{ account.account_id }}" class="btn btn-outline-success btn-sm">
+                        <i class="fas fa-exchange-alt me-1"></i>Transact
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="alert alert-info text-center">
+            <h4>No accounts found</h4>
+            <p>You don't have any bank accounts yet. Open your first account to get started!</p>
+            <a href="{% url 'accounts:account_create' %}" class="btn btn-primary">Open First Account</a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
