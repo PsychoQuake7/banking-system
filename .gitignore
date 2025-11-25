@@ -58,6 +58,10 @@ cache/
 # JetBrains (PyCharm)
 .idea/
 
+# Django DB
+db.sqlite3
+*.sqlite3
+
 # ------------------------
 # Node / Frontend (if you add modern UI later)
 # ------------------------
