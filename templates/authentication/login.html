@@ -12,18 +12,44 @@
             <div class="card-body p-4">
                 <form method="post">
                     {% csrf_token %}
+                    
+                    {% if messages %}
                     <div class="mb-3">
-                        <label for="username" class="form-label">Username</label>
-                        <input type="text" class="form-control" id="username" name="username" required>
+                        {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                        {% endfor %}
                     </div>
+                    {% endif %}
+                    
                     <div class="mb-3">
-                        <label for="password" class="form-label">Password</label>
-                        <input type="password" class="form-control" id="password" name="password" required>
+                        <label for="id_username" class="form-label">Username</label>
+                        <input type="text" name="username" class="form-control" id="id_username" 
+                               placeholder="Enter your username" required>
                     </div>
-                    <button type="submit" class="btn btn-primary w-100">Login</button>
+                    
+                    <div class="mb-3">
+                        <label for="id_password" class="form-label">Password</label>
+                        <input type="password" name="password" class="form-control" id="id_password" 
+                               placeholder="Enter your password" required>
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-sign-in-alt me-2"></i>Login
+                        </button>
+                    </div>
                 </form>
-                <div class="text-center mt-3">
-                    <p>Don't have an account? <a href="{% url 'register' %}">Register here</a></p>
+                
+                <hr class="my-4">
+                
+                <div class="text-center">
+                    <p class="mb-0">Don't have an account?</p>
+                    <a href="{% url 'authentication:register' %}" class="btn btn-outline-primary mt-2">
+                        <i class="fas fa-user-plus me-2"></i>Create Account
+                    </a>
                 </div>
             </div>
         </div>
