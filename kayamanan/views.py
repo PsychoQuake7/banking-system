@@ -6,9 +6,9 @@ def dashboard_view(request):
     try:
         # Test all the URLs used in base.html
         test_urls = [
-            ('authentication:login', reverse('authentication:login')),
-            ('authentication:logout', reverse('authentication:logout')),
-            ('authentication:register', reverse('authentication:register')),
+            ('account_login', reverse('account_login')),
+            ('account_logout', reverse('account_logout')),
+            ('account_signup', reverse('account_signup')),
             ('dashboard', reverse('dashboard')),
         ]
         print("URLs that work:", test_urls)

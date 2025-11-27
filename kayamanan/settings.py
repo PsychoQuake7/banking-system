@@ -38,17 +38,36 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'authentication',
+    # 'authentication',
     'clients',
     'accounts',
     'transactions',
     'loans',
     'notifications',
     'audit',
+    'django.contrib.sites',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
 ]
 
+SITE_ID = 1
+
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
+
+# Allauth settings
+LOGIN_REDIRECT_URL = 'dashboard'
+LOGOUT_REDIRECT_URL = 'account_login'
+ACCOUNT_LOGIN_METHODS = {'email', 'username'}  # Allow login with username or email
+ACCOUNT_SIGNUP_FIELDS = ['email*', 'username*', 'password1*', 'password2*']
+
+
 # Use the custom user model below
-AUTH_USER_MODEL = 'authentication.CustomUser'
+# Use the custom user model below
+# AUTH_USER_MODEL = 'authentication.CustomUser'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -58,6 +77,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'allauth.account.middleware.AccountMiddleware',
 ]
 
 ROOT_URLCONF = 'kayamanan.urls'
@@ -93,7 +113,7 @@ WSGI_APPLICATION = 'kayamanan.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'mysql.connector.django',  
+        'ENGINE': 'django.db.backends.mysql',  
         'NAME': 'kayamanan',        
         'USER': 'root',             
         'PASSWORD': 'calaisha',         
@@ -101,7 +121,6 @@ DATABASES = {
         'PORT': '3306',                      
         'OPTIONS': {
             'autocommit': True,
-            'use_pure': True,               
         }
     }
 }
