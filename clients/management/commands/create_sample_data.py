@@ -77,6 +77,7 @@ class Command(BaseCommand):
                 'address': '123 Rizal Street, Makati City, Metro Manila',
                 'credit_score': 750,
                 'monthly_income': Decimal('45000.00'),
+                'role': 'admin',  # Admin user
             },
             {
                 'username': 'maria.santos',
@@ -87,6 +88,7 @@ class Command(BaseCommand):
                 'address': '456 Bonifacio Avenue, Quezon City, Metro Manila',
                 'credit_score': 820,
                 'monthly_income': Decimal('65000.00'),
+                'role': 'staff',  # Staff user
             },
             {
                 'username': 'pedro.reyes',
@@ -97,6 +99,7 @@ class Command(BaseCommand):
                 'address': '789 Mabini Street, Pasig City, Metro Manila',
                 'credit_score': 680,
                 'monthly_income': Decimal('38000.00'),
+                'role': 'borrower',  # Borrower user
             },
             {
                 'username': 'ana.garcia',
@@ -107,6 +110,7 @@ class Command(BaseCommand):
                 'address': '321 Luna Street, Taguig City, Metro Manila',
                 'credit_score': 710,
                 'monthly_income': Decimal('52000.00'),
+                'role': 'borrower',  # Borrower user
             },
             {
                 'username': 'jose.mendoza',
@@ -117,6 +121,7 @@ class Command(BaseCommand):
                 'address': '654 Del Pilar Street, Manila City, Metro Manila',
                 'credit_score': 640,
                 'monthly_income': Decimal('35000.00'),
+                'role': 'borrower',  # Borrower user
             },
             {
                 'username': 'rosa.flores',
@@ -127,6 +132,7 @@ class Command(BaseCommand):
                 'address': '987 Aguinaldo Highway, Cavite',
                 'credit_score': 780,
                 'monthly_income': Decimal('58000.00'),
+                'role': 'staff',  # Staff user
             },
             {
                 'username': 'carlos.ramos',
@@ -137,6 +143,7 @@ class Command(BaseCommand):
                 'address': '147 Roxas Boulevard, Pasay City, Metro Manila',
                 'credit_score': 690,
                 'monthly_income': Decimal('42000.00'),
+                'role': 'borrower',  # Borrower user
             },
             {
                 'username': 'elena.cruz',
@@ -147,6 +154,7 @@ class Command(BaseCommand):
                 'address': '258 Quezon Avenue, Quezon City, Metro Manila',
                 'credit_score': 800,
                 'monthly_income': Decimal('72000.00'),
+                'role': 'borrower',  # Borrower user
             },
         ]
 
@@ -158,6 +166,7 @@ class Command(BaseCommand):
                 password='password123',
                 first_name=data['first_name'],
                 last_name=data['last_name'],
+                role=data['role'],  # Assign role to user
             )
             client = Client.objects.create(
                 user=user,
@@ -273,8 +282,18 @@ class Command(BaseCommand):
             'Wedding expenses',
         ]
         
-        # Get admin user as loan officer
-        admin_user = User.objects.get(username='admin')
+        # Get an admin or staff user as loan officer
+        # Use the first admin user, or fallback to first staff user
+        admin_users = User.objects.filter(role='admin')
+        staff_users = User.objects.filter(role='staff')
+        
+        if admin_users.exists():
+            loan_officer = admin_users.first()
+        elif staff_users.exists():
+            loan_officer = staff_users.first()
+        else:
+            # Fallback: use the first user
+            loan_officer = User.objects.first()
         
         for client in clients:
             # Each client has 0-2 loan applications
@@ -294,7 +313,7 @@ class Command(BaseCommand):
                 
                 loan_app = LoanApplication.objects.create(
                     client=client,
-                    loan_officer=admin_user,
+                    loan_officer=loan_officer,
                     loan_amount=loan_amount,
                     purpose=purpose,
                     status=status,

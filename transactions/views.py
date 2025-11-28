@@ -1,18 +1,22 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import PermissionDenied
 from .models import Transaction
+from users.decorators import staff_required, require_role
 
 # Create your views here.
 @login_required
 def transaction_list_view(request):
     # Base queryset
-    if hasattr(request.user, 'client'):
-        transactions = Transaction.objects.filter(account__client=request.user.client)
-        accounts = request.user.client.accounts.all()
-    elif request.user.is_superuser:
+    if request.user.role in ['admin', 'staff']:
+        # Staff/Admin see all transactions
         transactions = Transaction.objects.all()
         from accounts.models import Account
         accounts = Account.objects.all()
+    elif hasattr(request.user, 'client'):
+        # Borrowers see only their own transactions
+        transactions = Transaction.objects.filter(account__client=request.user.client)
+        accounts = request.user.client.accounts.all()
     else:
         transactions = Transaction.objects.none()
         accounts = []
@@ -20,6 +24,10 @@ def transaction_list_view(request):
     # Apply filters
     account_id = request.GET.get('account')
     if account_id:
+        # If borrower, ensure the account belongs to them
+        if request.user.role == 'borrower':
+            if not accounts.filter(account_id=account_id).exists():
+                raise PermissionDenied("You do not have permission to view transactions for this account.")
         transactions = transactions.filter(account_id=account_id)
 
     transaction_type = request.GET.get('transaction_type')
@@ -43,8 +51,12 @@ def transaction_list_view(request):
     }
     return render(request, 'transactions/transaction_list.html', context)
 
+@staff_required
 def transaction_create_view(request):
+    # This view handles deposits and withdrawals, which are staff operations
     return render(request, 'transactions/transaction_create.html')
 
+@login_required
 def transfer_create_view(request):
+    # Borrowers can transfer, but logic (in form/post) must validate source account ownership
     return render(request, 'transactions/transfer_create.html')

@@ -38,6 +38,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    # Custom apps - users must come first before other apps that reference User
+    'users',
+    # Other apps
     # 'authentication',
     'clients',
     'accounts',
@@ -53,6 +56,9 @@ INSTALLED_APPS = [
 
 SITE_ID = 1
 
+# Custom User Model
+AUTH_USER_MODEL = 'users.CustomUser'
+
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
     'allauth.account.auth_backends.AuthenticationBackend',
@@ -67,11 +73,6 @@ ACCOUNT_SIGNUP_FIELDS = ['email*', 'username*', 'password1*', 'password2*']
 
 # Email settings for development
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-
-
-# Use the custom user model below
-# Use the custom user model below
-# AUTH_USER_MODEL = 'authentication.CustomUser'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
