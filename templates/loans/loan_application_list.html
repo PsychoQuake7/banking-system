@@ -24,9 +24,11 @@
                 <label for="status" class="form-label">Status</label>
                 <select class="form-select" id="status" name="status">
                     <option value="">All Status</option>
-                    <option value="pending" {% if request.GET.status == 'pending' %}selected{% endif %}>Pending</option>
-                    <option value="approved" {% if request.GET.status == 'approved' %}selected{% endif %}>Approved</option>
-                    <option value="rejected" {% if request.GET.status == 'rejected' %}selected{% endif %}>Rejected</option>
+                    <option value="pending" {% if request.GET.status=='pending' %}selected{% endif %}>Pending</option>
+                    <option value="approved" {% if request.GET.status=='approved' %}selected{% endif %}>Approved
+                    </option>
+                    <option value="rejected" {% if request.GET.status=='rejected' %}selected{% endif %}>Rejected
+                    </option>
                 </select>
             </div>
             <div class="col-md-3">
@@ -34,7 +36,8 @@
                 <select class="form-select" id="officer" name="officer">
                     <option value="">All Officers</option>
                     {% for officer in loan_officers %}
-                    <option value="{{ officer.user_id }}" {% if request.GET.officer == officer.user_id|stringformat:"i" %}selected{% endif %}>
+                    <option value="{{ officer.user_id }}" {% if request.GET.officer==officer.user_id|stringformat:"i"
+                        %}selected{% endif %}>
                         {{ officer.username }}
                     </option>
                     {% endfor %}
@@ -42,13 +45,13 @@
             </div>
             <div class="col-md-3">
                 <label for="start_date" class="form-label">From Date</label>
-                <input type="date" class="form-control" id="start_date" name="start_date" 
-                       value="{{ request.GET.start_date }}">
+                <input type="date" class="form-control" id="start_date" name="start_date"
+                    value="{{ request.GET.start_date }}">
             </div>
             <div class="col-md-3">
                 <label for="end_date" class="form-label">To Date</label>
-                <input type="date" class="form-control" id="end_date" name="end_date" 
-                       value="{{ request.GET.end_date }}">
+                <input type="date" class="form-control" id="end_date" name="end_date"
+                    value="{{ request.GET.end_date }}">
             </div>
             <div class="col-12">
                 <button type="submit" class="btn btn-primary">Apply Filters</button>
@@ -92,21 +95,22 @@
                         <td>{{ application.application_date|date:"M d, Y" }}</td>
                         <td>
                             <div class="progress" style="height: 20px;">
-                                <div class="progress-bar {% if application.eligibility_score >= 70 %}bg-success{% elif application.eligibility_score >= 50 %}bg-warning{% else %}bg-danger{% endif %}" 
-                                     style="width: {{ application.eligibility_score }}%">
-                                    {{ application.eligibility_score }}%
+                                <div class="progress-bar {% if application.eligibility_score >= 70 %}bg-success{% elif application.eligibility_score >= 50 %}bg-warning{% else %}bg-danger{% endif %}"
+                                    style="width: {{ application.eligibility_score|default:0 }}%">
+                                    {{ application.eligibility_score|default:0 }}%
                                 </div>
                             </div>
                         </td>
                         <td>{{ application.loan_officer.username }}</td>
                         <td>
-                            <span class="badge bg-{% if application.status == 'approved' %}success{% elif application.status == 'rejected' %}danger{% else %}warning{% endif %}">
+                            <span
+                                class="badge bg-{% if application.status == 'approved' %}success{% elif application.status == 'rejected' %}danger{% else %}warning{% endif %}">
                                 {{ application.get_status_display }}
                             </span>
                         </td>
                         <td>
-                            <a href="{% url 'loans:loan_application_detail' application.application_id %}" 
-                               class="btn btn-sm btn-outline-primary">Review</a>
+                            <a href="{% url 'loans:loan_application_detail' application.application_id %}"
+                                class="btn btn-sm btn-outline-primary">Review</a>
                         </td>
                     </tr>
                     {% empty %}

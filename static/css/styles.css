@@ -1,0 +1,64 @@
+/* Custom Responsive Styles */
+
+/* General Mobile Adjustments */
+@media (max-width: 768px) {
+    h1 {
+        font-size: 1.75rem;
+    }
+    
+    h2 {
+        font-size: 1.5rem;
+    }
+    
+    .card-title {
+        font-size: 1.1rem;
+    }
+    
+    .display-4 {
+        font-size: 2.5rem;
+    }
+    
+    /* Improve spacing on mobile */
+    .container {
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+    
+    .card {
+        margin-bottom: 1rem;
+    }
+    
+    /* Make badges wrap if needed */
+    .badge {
+        white-space: normal;
+        text-align: center;
+    }
+}
+
+/* Navbar Adjustments */
+.navbar-brand {
+    font-weight: bold;
+    letter-spacing: 0.5px;
+}
+
+/* Table Responsiveness */
+.table-responsive {
+    margin-bottom: 1rem;
+    border-radius: 0.25rem;
+}
+
+/* Utility Classes */
+.text-justify-mobile {
+    text-align: justify;
+}
+
+@media (max-width: 576px) {
+    .text-justify-mobile {
+        text-align: left;
+    }
+    
+    /* Stack buttons on very small screens */
+    .d-grid .btn {
+        margin-bottom: 0.5rem;
+    }
+}

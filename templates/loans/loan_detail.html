@@ -9,7 +9,8 @@
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h4 class="mb-0"><i class="fas fa-file-invoice-dollar me-2"></i>Loan Details</h4>
-                <span class="badge bg-{% if loan.status == 'active' %}success{% elif loan.status == 'paid' %}info{% else %}danger{% endif %}">
+                <span
+                    class="badge bg-{% if loan.status == 'active' %}success{% elif loan.status == 'paid' %}info{% else %}danger{% endif %}">
                     {{ loan.get_status_display }}
                 </span>
             </div>
@@ -17,39 +18,45 @@
                 <div class="row mb-4">
                     <div class="col-md-6">
                         <p><strong>Loan Amount:</strong><br>
-                        <span class="h4">₱{{ loan.loan_amount }}</span></p>
+                            <span class="h4">₱{{ loan.loan_amount }}</span>
+                        </p>
                     </div>
                     <div class="col-md-6">
                         <p><strong>Remaining Balance:</strong><br>
-                        <span class="h4 text-{% if loan.remaining_balance > 0 %}warning{% else %}success{% endif %}">
-                            ₱{{ loan.remaining_balance }}
-                        </span></p>
+                            <span
+                                class="h4 text-{% if loan.remaining_balance > 0 %}warning{% else %}success{% endif %}">
+                                ₱{{ loan.remaining_balance }}
+                            </span>
+                        </p>
                     </div>
                 </div>
-                
+
                 <div class="row">
                     <div class="col-md-4">
                         <p><strong>Interest Rate:</strong><br>
-                        <span class="h5">{{ loan.interest_rate }}%</span></p>
+                            <span class="h5">{{ loan.interest_rate }}%</span>
+                        </p>
                     </div>
                     <div class="col-md-4">
                         <p><strong>Term:</strong><br>
-                        <span class="h5">{{ loan.term_months }} months</span></p>
+                            <span class="h5">{{ loan.term_months }} months</span>
+                        </p>
                     </div>
                     <div class="col-md-4">
                         <p><strong>Monthly Payment:</strong><br>
-                        <span class="h5">₱{{ monthly_payment|floatformat:2 }}</span></p>
+                            <span class="h5">₱{{ monthly_payment|floatformat:2 }}</span>
+                        </p>
                     </div>
                 </div>
 
                 <div class="row mt-3">
                     <div class="col-md-6">
                         <p><strong>Start Date:</strong><br>
-                        {{ loan.start_date|date:"F d, Y" }}</p>
+                            {{ loan.start_date|date:"F d, Y" }}</p>
                     </div>
                     <div class="col-md-6">
                         <p><strong>End Date:</strong><br>
-                        {{ loan.end_date|date:"F d, Y" }}</p>
+                            {{ loan.end_date|date:"F d, Y" }}</p>
                     </div>
                 </div>
             </div>
@@ -76,14 +83,16 @@
                         </thead>
                         <tbody>
                             {% for payment in amortization_schedule %}
-                            <tr class="{% if payment.status == 'overdue' %}table-danger{% elif payment.status == 'paid' %}table-success{% endif %}">
+                            <tr
+                                class="{% if payment.status == 'overdue' %}table-danger{% elif payment.status == 'paid' %}table-success{% endif %}">
                                 <td>{{ payment.installment_number }}</td>
                                 <td>{{ payment.due_date|date:"M d, Y" }}</td>
                                 <td>₱{{ payment.principal_amount }}</td>
                                 <td>₱{{ payment.interest_amount }}</td>
                                 <td><strong>₱{{ payment.total_payment }}</strong></td>
                                 <td>
-                                    <span class="badge bg-{% if payment.status == 'paid' %}success{% elif payment.status == 'overdue' %}danger{% else %}warning{% endif %}">
+                                    <span
+                                        class="badge bg-{% if payment.status == 'paid' %}success{% elif payment.status == 'overdue' %}danger{% else %}warning{% endif %}">
                                         {{ payment.get_status_display }}
                                     </span>
                                 </td>
@@ -129,18 +138,23 @@
             </div>
             <div class="card-body">
                 <p><strong>Total Paid:</strong><br>
-                <span class="h5 text-success">₱{{ total_paid|default:0 }}</span></p>
-                
+                    <span class="h5 text-success">₱{{ total_paid|default:0 }}</span>
+                </p>
+
                 <p><strong>Remaining Payments:</strong><br>
-                <span class="h5">{{ remaining_payments }}/{{ loan.term_months }}</span></p>
-                
+                    <span class="h5">{{ remaining_payments }}/{{ loan.term_months }}</span>
+                </p>
+
                 <p><strong>Next Payment Due:</strong><br>
-                <span class="h6">{{ next_payment_date|date:"M d, Y" }}</span></p>
-                
+                    <span class="h6">{{ next_payment_date|date:"M d, Y" }}</span>
+                </p>
+
                 <p><strong>Days Until Due:</strong><br>
-                <span class="h6 {% if days_until_due < 7 %}text-danger{% elif days_until_due < 14 %}text-warning{% else %}text-success{% endif %}">
-                    {{ days_until_due }} days
-                </span></p>
+                    <span
+                        class="h6 {% if days_until_due < 7 %}text-danger{% elif days_until_due < 14 %}text-warning{% else %}text-success{% endif %}">
+                        {{ days_until_due }} days
+                    </span>
+                </p>
             </div>
         </div>
 
@@ -151,7 +165,7 @@
             </div>
             <div class="card-body">
                 <div class="progress mb-2" style="height: 25px;">
-                    <div class="progress-bar bg-success" style="width: {{ progress_percentage }}%">
+                    <div class="progress-bar bg-success" style="width: {{ progress_percentage|default:0 }}%">
                         {{ progress_percentage|floatformat:1 }}%
                     </div>
                 </div>

@@ -60,9 +60,13 @@ AUTHENTICATION_BACKENDS = [
 
 # Allauth settings
 LOGIN_REDIRECT_URL = 'dashboard'
+ACCOUNT_SIGNUP_REDIRECT_URL = 'dashboard'
 LOGOUT_REDIRECT_URL = 'account_login'
 ACCOUNT_LOGIN_METHODS = {'email', 'username'}  # Allow login with username or email
 ACCOUNT_SIGNUP_FIELDS = ['email*', 'username*', 'password1*', 'password2*']
+
+# Email settings for development
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 
 # Use the custom user model below
@@ -130,13 +134,7 @@ DATABASES = {
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
         'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
     },
     {
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',

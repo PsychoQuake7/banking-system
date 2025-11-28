@@ -22,7 +22,6 @@ ENV/
 *.sqlite3
 
 # Local static & media (should not be tracked)
-static/
 staticfiles/
 media/
 

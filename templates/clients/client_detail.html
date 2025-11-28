@@ -17,37 +17,42 @@
                 <div class="row mb-4">
                     <div class="col-md-6">
                         <p><strong>Full Name:</strong><br>
-                        <span class="h4">{{ client.first_name }} {{ client.last_name }}</span></p>
+                            <span class="h4">{{ client.first_name }} {{ client.last_name }}</span>
+                        </p>
                     </div>
                     <div class="col-md-6">
                         <p><strong>Client ID:</strong><br>
-                        <span class="h4">#{{ client.client_id }}</span></p>
+                            <span class="h4">#{{ client.client_id }}</span>
+                        </p>
                     </div>
                 </div>
-                
+
                 <div class="row">
                     <div class="col-md-6">
                         <p><strong>Date of Birth:</strong><br>
-                        {{ client.date_of_birth|date:"F d, Y" }}</p>
-                        
+                            {{ client.date_of_birth|date:"F d, Y" }}</p>
+
                         <p><strong>Monthly Income:</strong><br>
-                        <span class="h5">₱{{ client.monthly_income|floatformat:2 }}</span></p>
+                            <span class="h5">₱{{ client.monthly_income|floatformat:2 }}</span>
+                        </p>
                     </div>
                     <div class="col-md-6">
                         <p><strong>Credit Score:</strong><br>
-                        <span class="badge bg-{% if client.credit_score >= 800 %}success{% elif client.credit_score >= 700 %}info{% elif client.credit_score >= 600 %}warning{% else %}danger{% endif %} fs-6">
-                            {{ client.credit_score }}
-                        </span></p>
-                        
+                            <span
+                                class="badge bg-{% if client.credit_score >= 800 %}success{% elif client.credit_score >= 700 %}info{% elif client.credit_score >= 600 %}warning{% else %}danger{% endif %} fs-6">
+                                {{ client.credit_score }}
+                            </span>
+                        </p>
+
                         <p><strong>Member Since:</strong><br>
-                        {{ client.created_at|date:"F d, Y" }}</p>
+                            {{ client.created_at|date:"F d, Y" }}</p>
                     </div>
                 </div>
 
                 <div class="row mt-3">
                     <div class="col-12">
                         <p><strong>Address:</strong><br>
-                        {{ client.address|linebreaks }}</p>
+                            {{ client.address|linebreaks }}</p>
                     </div>
                 </div>
 
@@ -55,11 +60,11 @@
                 <div class="row mt-3">
                     <div class="col-md-6">
                         <p><strong>Email:</strong><br>
-                        {{ client.user.email }}</p>
+                            {{ client.user.email }}</p>
                     </div>
                     <div class="col-md-6">
                         <p><strong>Phone:</strong><br>
-                        {{ client.user.phone|default:"Not provided" }}</p>
+                            {{ client.user.phone|default:"Not provided" }}</p>
                     </div>
                 </div>
 
@@ -101,7 +106,8 @@
                                 <td>₱{{ account.current_balance }}</td>
                                 <td>{{ account.interest_rate }}%</td>
                                 <td>
-                                    <span class="badge bg-{% if account.is_active %}success{% else %}secondary{% endif %}">
+                                    <span
+                                        class="badge bg-{% if account.is_active %}success{% else %}secondary{% endif %}">
                                         {{ account.is_active|yesno:"Active,Inactive" }}
                                     </span>
                                 </td>
@@ -128,17 +134,17 @@
                     <div class="display-4 text-primary">{{ accounts|length }}</div>
                     <p class="text-muted">Total Accounts</p>
                 </div>
-                
+
                 <div class="text-center mb-4">
                     <div class="display-4 text-success">₱{{ total_balance|default:0|floatformat:2 }}</div>
                     <p class="text-muted">Total Balance</p>
                 </div>
-                
+
                 <div class="text-center mb-4">
                     <div class="display-4 text-warning">{{ active_loans_count }}</div>
                     <p class="text-muted">Active Loans</p>
                 </div>
-                
+
                 <div class="text-center">
                     <div class="display-4 text-info">{{ total_transactions }}</div>
                     <p class="text-muted">Total Transactions</p>
@@ -156,10 +162,12 @@
                     <a href="{% url 'clients:client_edit' client.client_id %}" class="btn btn-outline-primary">
                         <i class="fas fa-edit me-2"></i>Edit Client
                     </a>
-                    <a href="{% url 'accounts:account_create' %}?client={{ client.client_id }}" class="btn btn-outline-success">
+                    <a href="{% url 'accounts:account_create' %}?client={{ client.client_id }}"
+                        class="btn btn-outline-success">
                         <i class="fas fa-plus me-2"></i>Open New Account
                     </a>
-                    <a href="{% url 'loans:loan_application_list' %}?client={{ client.client_id }}" class="btn btn-outline-info">
+                    <a href="{% url 'loans:loan_application_list' %}?client={{ client.client_id }}"
+                        class="btn btn-outline-info">
                         <i class="fas fa-hand-holding-usd me-2"></i>View Loan Applications
                     </a>
                     <a href="{% url 'clients:client_list' %}" class="btn btn-outline-secondary">
@@ -176,8 +184,8 @@
             </div>
             <div class="card-body">
                 <div class="progress mb-2" style="height: 25px;">
-                    <div class="progress-bar {% if client.credit_score >= 700 %}bg-success{% elif client.credit_score >= 600 %}bg-warning{% else %}bg-danger{% endif %}" 
-                         style="width: {{ client.credit_score / 10 }}%">
+                    <div class="progress-bar {% if client.credit_score >= 700 %}bg-success{% elif client.credit_score >= 600 %}bg-warning{% else %}bg-danger{% endif %}"
+                        style="width: {% widthratio client.credit_score|default:0 1000 100 %}%">
                         {{ client.credit_score }}/1000
                     </div>
                 </div>

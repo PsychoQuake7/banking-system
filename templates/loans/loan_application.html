@@ -12,15 +12,15 @@
             <div class="card-body p-4">
                 <form method="post">
                     {% csrf_token %}
-                    
+
                     <!-- Loan Details -->
                     <div class="mb-3">
                         <label for="loan_amount" class="form-label">Loan Amount (₱)</label>
-                        <input type="number" class="form-control" id="loan_amount" name="loan_amount" 
-                               min="1000" max="1000000" step="1000" required>
+                        <input type="number" class="form-control" id="loan_amount" name="loan_amount" min="1000"
+                            max="1000000" step="1000" required>
                         <div class="form-text">Minimum: ₱1,000 | Maximum: ₱1,000,000</div>
                     </div>
-                    
+
                     <div class="mb-3">
                         <label for="purpose" class="form-label">Loan Purpose</label>
                         <select class="form-select" id="purpose" name="purpose" required>
@@ -34,11 +34,11 @@
                             <option value="Other">Other</option>
                         </select>
                     </div>
-                    
+
                     <div class="mb-3" id="custom-purpose-field" style="display: none;">
                         <label for="custom_purpose" class="form-label">Custom Purpose (if Other)</label>
-                        <input type="text" class="form-control" id="custom_purpose" name="custom_purpose" 
-                               placeholder="Specify your loan purpose">
+                        <input type="text" class="form-control" id="custom_purpose" name="custom_purpose"
+                            placeholder="Specify your loan purpose">
                     </div>
 
                     <div class="mb-3">
@@ -62,11 +62,13 @@
                         <div class="card-body">
                             <div class="row">
                                 <div class="col-md-6">
-                                    <p><strong>Monthly Income:</strong> ₱{{ client.monthly_income|default:0|floatformat:2 }}</p>
+                                    <p><strong>Monthly Income:</strong> ₱{{
+                                        client.monthly_income|default:0|floatformat:2 }}</p>
                                 </div>
                                 <div class="col-md-6">
-                                    <p><strong>Credit Score:</strong> 
-                                        <span class="badge bg-{% if client.credit_score >= 700 %}success{% elif client.credit_score >= 600 %}warning{% else %}danger{% endif %}">
+                                    <p><strong>Credit Score:</strong>
+                                        <span
+                                            class="badge bg-{% if client.credit_score >= 700 %}success{% elif client.credit_score >= 600 %}warning{% else %}danger{% endif %}">
                                             {{ client.credit_score|default:0 }}
                                         </span>
                                     </p>
@@ -74,14 +76,15 @@
                             </div>
                             <div class="row">
                                 <div class="col-12">
-                                    <p><strong>Estimated Eligibility Score:</strong> 
-                                        <span class="badge bg-{% if eligibility_score >= 70 %}success{% elif eligibility_score >= 50 %}warning{% else %}danger{% endif %}">
+                                    <p><strong>Estimated Eligibility Score:</strong>
+                                        <span
+                                            class="badge bg-{% if eligibility_score >= 70 %}success{% elif eligibility_score >= 50 %}warning{% else %}danger{% endif %}">
                                             {{ eligibility_score|default:0 }}%
                                         </span>
                                     </p>
                                     <div class="progress mb-2" style="height: 20px;">
-                                        <div class="progress-bar {% if eligibility_score >= 70 %}bg-success{% elif eligibility_score >= 50 %}bg-warning{% else %}bg-danger{% endif %}" 
-                                             style="width: {{ eligibility_score|default:0 }}%">
+                                        <div class="progress-bar {% if eligibility_score >= 70 %}bg-success{% elif eligibility_score >= 50 %}bg-warning{% else %}bg-danger{% endif %}"
+                                            style="width: {{ eligibility_score|default:0 }}%">
                                             {{ eligibility_score|default:0 }}%
                                         </div>
                                     </div>
@@ -102,35 +105,40 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <p><strong>Monthly Payment:</strong><br>
-                                    <span class="h5" id="preview-monthly-payment">-</span></p>
+                                        <span class="h5" id="preview-monthly-payment">-</span>
+                                    </p>
                                 </div>
                                 <div class="col-md-6">
                                     <p><strong>Total Interest:</strong><br>
-                                    <span class="h5" id="preview-total-interest">-</span></p>
+                                        <span class="h5" id="preview-total-interest">-</span>
+                                    </p>
                                 </div>
                             </div>
                             <div class="row">
                                 <div class="col-md-6">
                                     <p><strong>Total Payment:</strong><br>
-                                    <span class="h5" id="preview-total-payment">-</span></p>
+                                        <span class="h5" id="preview-total-payment">-</span>
+                                    </p>
                                 </div>
                                 <div class="col-md-6">
                                     <p><strong>Interest Rate:</strong><br>
-                                    <span class="h5" id="preview-interest-rate">-</span></p>
+                                        <span class="h5" id="preview-interest-rate">-</span>
+                                    </p>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- Terms and Conditions -->
                     <div class="form-check mb-4">
                         <input class="form-check-input" type="checkbox" id="terms" name="terms" required>
                         <label class="form-check-label" for="terms">
-                            I agree to the <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal">terms and conditions</a>
+                            I agree to the <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal">terms and
+                                conditions</a>
                             and understand that this application is subject to approval based on credit assessment.
                         </label>
                     </div>
-                    
+
                     <div class="d-grid gap-2 d-md-flex justify-content-md-end">
                         <a href="{% url 'loans:loan_list' %}" class="btn btn-secondary me-md-2">Cancel</a>
                         <button type="submit" class="btn btn-success">Submit Application</button>
@@ -156,7 +164,7 @@
                     <li>Late payment fee: 5% of installment amount or ₱500, whichever is higher</li>
                     <li>Processing fee: 1% of loan amount (maximum ₱2,000)</li>
                 </ul>
-                
+
                 <h6>Repayment Terms</h6>
                 <ul>
                     <li>Minimum repayment period: 6 months</li>
@@ -164,7 +172,7 @@
                     <li>Payments are due monthly on the same date as disbursement</li>
                     <li>Early repayment is allowed with no penalty</li>
                 </ul>
-                
+
                 <h6>Eligibility and Approval</h6>
                 <ul>
                     <li>Minimum age: 18 years</li>
@@ -172,7 +180,7 @@
                     <li>Valid government-issued ID required</li>
                     <li>Applications are subject to credit check and approval</li>
                 </ul>
-                
+
                 <h6>Default Consequences</h6>
                 <ul>
                     <li>Late payments affect credit score</li>
@@ -189,73 +197,73 @@
 
 {% block javascript %}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const purposeSelect = document.getElementById('purpose');
-    const customPurposeField = document.getElementById('custom-purpose-field');
-    const loanAmountInput = document.getElementById('loan_amount');
-    const termMonthsSelect = document.getElementById('term_months');
-    const loanPreview = document.getElementById('loan-preview');
-    
-    const monthlyPaymentSpan = document.getElementById('preview-monthly-payment');
-    const totalInterestSpan = document.getElementById('preview-total-interest');
-    const totalPaymentSpan = document.getElementById('preview-total-payment');
-    const interestRateSpan = document.getElementById('preview-interest-rate');
+    document.addEventListener('DOMContentLoaded', function () {
+        const purposeSelect = document.getElementById('purpose');
+        const customPurposeField = document.getElementById('custom-purpose-field');
+        const loanAmountInput = document.getElementById('loan_amount');
+        const termMonthsSelect = document.getElementById('term_months');
+        const loanPreview = document.getElementById('loan-preview');
 
-    // Show/hide custom purpose field
-    purposeSelect.addEventListener('change', function() {
-        if (this.value === 'Other') {
-            customPurposeField.style.display = 'block';
-            customPurposeField.querySelector('input').required = true;
-        } else {
-            customPurposeField.style.display = 'none';
-            customPurposeField.querySelector('input').required = false;
-            customPurposeField.querySelector('input').value = '';
+        const monthlyPaymentSpan = document.getElementById('preview-monthly-payment');
+        const totalInterestSpan = document.getElementById('preview-total-interest');
+        const totalPaymentSpan = document.getElementById('preview-total-payment');
+        const interestRateSpan = document.getElementById('preview-interest-rate');
+
+        // Show/hide custom purpose field
+        purposeSelect.addEventListener('change', function () {
+            if (this.value === 'Other') {
+                customPurposeField.style.display = 'block';
+                customPurposeField.querySelector('input').required = true;
+            } else {
+                customPurposeField.style.display = 'none';
+                customPurposeField.querySelector('input').required = false;
+                customPurposeField.querySelector('input').value = '';
+            }
+        });
+
+        // Calculate loan preview
+        function calculateLoanPreview() {
+            const loanAmount = parseFloat(loanAmountInput.value) || 0;
+            const termMonths = parseInt(termMonthsSelect.value) || 0;
+
+            if (loanAmount > 0 && termMonths > 0) {
+                // Calculate interest rate based on loan amount and term
+                let interestRate = 8.0; // Base rate
+
+                // Adjust rate based on loan amount
+                if (loanAmount > 500000) interestRate += 1.0;
+                else if (loanAmount > 200000) interestRate += 0.5;
+
+                // Adjust rate based on term
+                if (termMonths > 36) interestRate += 1.0;
+                else if (termMonths > 24) interestRate += 0.5;
+
+                const monthlyRate = interestRate / 100 / 12;
+                const monthlyPayment = (loanAmount * monthlyRate * Math.pow(1 + monthlyRate, termMonths)) /
+                    (Math.pow(1 + monthlyRate, termMonths) - 1);
+                const totalPayment = monthlyPayment * termMonths;
+                const totalInterest = totalPayment - loanAmount;
+
+                // Update preview
+                monthlyPaymentSpan.textContent = '₱' + monthlyPayment.toFixed(2);
+                totalInterestSpan.textContent = '₱' + totalInterest.toFixed(2);
+                totalPaymentSpan.textContent = '₱' + totalPayment.toFixed(2);
+                interestRateSpan.textContent = interestRate.toFixed(1) + '%';
+
+                // Show preview
+                loanPreview.style.display = 'block';
+            } else {
+                loanPreview.style.display = 'none';
+            }
         }
+
+        // Add event listeners for loan calculation
+        loanAmountInput.addEventListener('input', calculateLoanPreview);
+        termMonthsSelect.addEventListener('change', calculateLoanPreview);
+
+        // Initial calculation if values are pre-filled
+        calculateLoanPreview();
     });
-
-    // Calculate loan preview
-    function calculateLoanPreview() {
-        const loanAmount = parseFloat(loanAmountInput.value) || 0;
-        const termMonths = parseInt(termMonthsSelect.value) || 0;
-        
-        if (loanAmount > 0 && termMonths > 0) {
-            // Calculate interest rate based on loan amount and term
-            let interestRate = 8.0; // Base rate
-            
-            // Adjust rate based on loan amount
-            if (loanAmount > 500000) interestRate += 1.0;
-            else if (loanAmount > 200000) interestRate += 0.5;
-            
-            // Adjust rate based on term
-            if (termMonths > 36) interestRate += 1.0;
-            else if (termMonths > 24) interestRate += 0.5;
-            
-            const monthlyRate = interestRate / 100 / 12;
-            const monthlyPayment = (loanAmount * monthlyRate * Math.pow(1 + monthlyRate, termMonths)) / 
-                                 (Math.pow(1 + monthlyRate, termMonths) - 1);
-            const totalPayment = monthlyPayment * termMonths;
-            const totalInterest = totalPayment - loanAmount;
-            
-            // Update preview
-            monthlyPaymentSpan.textContent = '₱' + monthlyPayment.toFixed(2);
-            totalInterestSpan.textContent = '₱' + totalInterest.toFixed(2);
-            totalPaymentSpan.textContent = '₱' + totalPayment.toFixed(2);
-            interestRateSpan.textContent = interestRate.toFixed(1) + '%';
-            
-            // Show preview
-            loanPreview.style.display = 'block';
-        } else {
-            loanPreview.style.display = 'none';
-        }
-    }
-
-    // Add event listeners for loan calculation
-    loanAmountInput.addEventListener('input', calculateLoanPreview);
-    termMonthsSelect.addEventListener('change', calculateLoanPreview);
-    
-    // Initial calculation if values are pre-filled
-    calculateLoanPreview();
-});
 </script>
 {% endblock %}
 {% endblock %}
