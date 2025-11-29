@@ -46,23 +46,19 @@ def loan_detail_view(request, id):
 @login_required
 def loan_application_view(request):
     client = None
-    eligibility_score = 0
+    eligibility_data = None
     
     if hasattr(request.user, 'client'):
         client = request.user.client
-        # Calculate simple eligibility score
-        if client.credit_score >= 800:
-            eligibility_score = 95
-        elif client.credit_score >= 700:
-            eligibility_score = 85
-        elif client.credit_score >= 600:
-            eligibility_score = 65
-        else:
-            eligibility_score = 45
+        # Use comprehensive eligibility calculation
+        from loans.utils import calculate_eligibility_score, get_improvement_suggestions
+        
+        eligibility_data = calculate_eligibility_score(client)
+        eligibility_data['suggestions'] = get_improvement_suggestions(eligibility_data)
             
     context = {
         'client': client,
-        'eligibility_score': eligibility_score
+        'eligibility_data': eligibility_data
     }
     return render(request, 'loans/loan_application.html', context)
 

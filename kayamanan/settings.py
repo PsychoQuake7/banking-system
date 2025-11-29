@@ -69,7 +69,14 @@ LOGIN_REDIRECT_URL = 'dashboard'
 ACCOUNT_SIGNUP_REDIRECT_URL = 'dashboard'
 LOGOUT_REDIRECT_URL = 'account_login'
 ACCOUNT_LOGIN_METHODS = {'email', 'username'}  # Allow login with username or email
-ACCOUNT_SIGNUP_FIELDS = ['email*', 'username*', 'password1*', 'password2*']
+ACCOUNT_EMAIL_REQUIRED = True  # Require email for registration
+ACCOUNT_EMAIL_VERIFICATION = 'optional'  # Email verification is optional
+
+# Custom allauth form and adapter
+ACCOUNT_FORMS = {
+    'signup': 'users.forms.CustomSignupForm',
+}
+ACCOUNT_ADAPTER = 'users.adapters.CustomAccountAdapter'
 
 # Email settings for development
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
@@ -159,6 +166,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = 'static/'
+
+# Media files (uploads)
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field

@@ -27,21 +27,21 @@
             <div class="col-md-3">
                 <select class="form-select" name="status">
                     <option value="">All Status</option>
-                    <option value="active" {% if request.GET.status=='active' %}selected{% endif %}>Active</option>
-                    <option value="inactive" {% if request.GET.status=='inactive' %}selected{% endif %}>Inactive
+                    <option value="active" {% if request.GET.status == 'active' %}selected{% endif %}>Active</option>
+                    <option value="inactive" {% if request.GET.status == 'inactive' %}selected{% endif %}>Inactive
                     </option>
                 </select>
             </div>
             <div class="col-md-3">
                 <select class="form-select" name="credit_score">
                     <option value="">All Credit Scores</option>
-                    <option value="excellent" {% if request.GET.credit_score=='excellent' %}selected{% endif %}>
+                    <option value="excellent" {% if request.GET.credit_score == 'excellent' %}selected{% endif %}>
                         Excellent (800+)</option>
-                    <option value="good" {% if request.GET.credit_score=='good' %}selected{% endif %}>Good (700-799)
+                    <option value="good" {% if request.GET.credit_score == 'good' %}selected{% endif %}>Good (700-799)
                     </option>
-                    <option value="fair" {% if request.GET.credit_score=='fair' %}selected{% endif %}>Fair (600-699)
+                    <option value="fair" {% if request.GET.credit_score == 'fair' %}selected{% endif %}>Fair (600-699)
                     </option>
-                    <option value="poor" {% if request.GET.credit_score=='poor' %}selected{% endif %}>Poor (Below 600)
+                    <option value="poor" {% if request.GET.credit_score == 'poor' %}selected{% endif %}>Poor (Below 600)
                     </option>
                 </select>
             </div>
