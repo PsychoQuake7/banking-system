@@ -1,0 +1,283 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Loan Application #{{ application.application_id }} - Kayamanan Bank{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="fas fa-file-alt me-2"></i>Loan Application #{{ application.application_id }}</h1>
+    <a href="{% url 'loans:loan_application_list' %}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Back to Applications
+    </a>
+</div>
+
+<!-- Application Status Alert -->
+{% if application.status == 'approved' %}
+<div class="alert alert-success">
+    <i class="fas fa-check-circle me-2"></i>
+    <strong>Approved</strong> - This application was approved on {{ application.approval_date|date:"M d, Y" }}
+</div>
+{% elif application.status == 'rejected' %}
+<div class="alert alert-danger">
+    <i class="fas fa-times-circle me-2"></i>
+    <strong>Rejected</strong> - {{ application.rejection_reason }}
+</div>
+{% else %}
+<div class="alert alert-warning">
+    <i class="fas fa-clock me-2"></i>
+    <strong>Pending Review</strong> - This application is awaiting approval
+</div>
+{% endif %}
+
+<div class="row">
+    <!-- Client Information -->
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="card-title mb-0"><i class="fas fa-user me-2"></i>Client Information</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-borderless mb-0">
+                    <tr>
+                        <th width="40%">Name:</th>
+                        <td>{{ application.client.first_name }} {{ application.client.last_name }}</td>
+                    </tr>
+                    <tr>
+                        <th>Client ID:</th>
+                        <td>{{ application.client.client_id }}</td>
+                    </tr>
+                    <tr>
+                        <th>Credit Score:</th>
+                        <td>
+                            <strong
+                                class="{% if application.client.credit_score >= 700 %}text-success{% elif application.client.credit_score >= 600 %}text-warning{% else %}text-danger{% endif %}">
+                                {{ application.client.credit_score }}
+                            </strong>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Email:</th>
+                        <td>{{ application.client.email|default:"N/A" }}</td>
+                    </tr>
+                    <tr>
+                        <th>Phone:</th>
+                        <td>{{ application.client.phone_number|default:"N/A" }}</td>
+                    </tr>
+                    <tr>
+                        <th>Address:</th>
+                        <td>{{ application.client.address|default:"N/A" }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Application Details -->
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="card-title mb-0"><i class="fas fa-info-circle me-2"></i>Application Details</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-borderless mb-0">
+                    <tr>
+                        <th width="40%">Application Date:</th>
+                        <td>{{ application.application_date|date:"M d, Y" }}</td>
+                    </tr>
+                    <tr>
+                        <th>Loan Amount:</th>
+                        <td><strong>₱{{ application.loan_amount|floatformat:2|intcomma }}</strong></td>
+                    </tr>
+                    <tr>
+                        <th>Term:</th>
+                        <td>{{ application.term_months }} months</td>
+                    </tr>
+                    <tr>
+                        <th>Purpose:</th>
+                        <td>{{ application.purpose }}</td>
+                    </tr>
+                    <tr>
+                        <th>Status:</th>
+                        <td>
+                            <span
+                                class="badge bg-{% if application.status == 'approved' %}success{% elif application.status == 'rejected' %}danger{% else %}warning{% endif %}">
+                                {{ application.get_status_display }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% if application.loan_officer %}
+                    <tr>
+                        <th>Loan Officer:</th>
+                        <td>{{ application.loan_officer.username }}</td>
+                    </tr>
+                    {% endif %}
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Eligibility Assessment -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="card-title mb-0"><i class="fas fa-chart-line me-2"></i>Eligibility Assessment</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <h6>Overall Eligibility Score</h6>
+                <div class="progress" style="height: 30px;">
+                    <div class="progress-bar {% if eligibility_data.eligibility_score >= 70 %}bg-success{% elif eligibility_data.eligibility_score >= 50 %}bg-warning{% else %}bg-danger{% endif %}"
+                        style="width: {{ eligibility_data.eligibility_score }}%">
+                        {{ eligibility_data.eligibility_score|floatformat:0 }}%
+                    </div>
+                </div>
+                <p class="mt-2 mb-0">
+                    <strong>Maximum Recommended Loan:</strong> ₱{{
+                    eligibility_data.max_loan_amount|floatformat:2|intcomma }}
+                </p>
+            </div>
+            <div class="col-md-6">
+                <h6>Score Breakdown</h6>
+                <ul class="list-unstyled">
+                    <li><i class="fas fa-check-circle text-success me-2"></i>Income Score: {{
+                        eligibility_data.income_score|floatformat:0 }}%</li>
+                    <li><i class="fas fa-check-circle text-success me-2"></i>Credit Score: {{
+                        eligibility_data.credit_score_rating|floatformat:0 }}%</li>
+                    <li><i class="fas fa-check-circle text-success me-2"></i>Debt-to-Income: {{
+                        eligibility_data.dti_score|floatformat:0 }}%</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loan Calculation Preview -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="card-title mb-0"><i class="fas fa-calculator me-2"></i>Loan Calculation Preview</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="text-center p-3 bg-light rounded">
+                    <h6 class="text-muted">Loan Amount</h6>
+                    <h4>₱{{ application.loan_amount|floatformat:2|intcomma }}</h4>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="text-center p-3 bg-light rounded">
+                    <h6 class="text-muted">Interest Rate</h6>
+                    <h4>{{ interest_rate|floatformat:2|mul:100 }}%</h4>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="text-center p-3 bg-light rounded">
+                    <h6 class="text-muted">Monthly Payment</h6>
+                    <h4>₱{{ monthly_payment|floatformat:2|intcomma }}</h4>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="text-center p-3 bg-light rounded">
+                    <h6 class="text-muted">Total Interest</h6>
+                    <h4>₱{{ total_interest|floatformat:2|intcomma }}</h4>
+                </div>
+            </div>
+        </div>
+        <div class="mt-3">
+            <p class="mb-0"><strong>Total Amount Payable:</strong> ₱{{ total_payment|floatformat:2|intcomma }} over {{
+                application.term_months }} months</p>
+        </div>
+    </div>
+</div>
+
+<!-- Action Buttons -->
+{% if application.status == 'pending' %}
+<div class="card">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h5 class="mb-0">Application Decision</h5>
+                <p class="text-muted mb-0">Review the application details and make a decision</p>
+            </div>
+            <div>
+                <button type="button" class="btn btn-success btn-lg me-2" data-bs-toggle="modal"
+                    data-bs-target="#approveModal">
+                    <i class="fas fa-check me-2"></i>Approve
+                </button>
+                <button type="button" class="btn btn-danger btn-lg" data-bs-toggle="modal"
+                    data-bs-target="#rejectModal">
+                    <i class="fas fa-times me-2"></i>Reject
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Approve Modal -->
+<div class="modal fade" id="approveModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">Approve Loan Application</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="{% url 'loans:approve_loan_application' application.application_id %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <p>Are you sure you want to approve this loan application?</p>
+                    <div class="mb-3">
+                        <label for="interest_rate" class="form-label">Interest Rate (Annual)</label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" id="interest_rate" name="interest_rate"
+                                value="0.12" step="0.01" min="0" max="1" required>
+                            <span class="input-group-text">%</span>
+                        </div>
+                        <small class="text-muted">Enter as decimal (e.g., 0.12 for 12%)</small>
+                    </div>
+                    <div class="alert alert-info">
+                        <strong>Note:</strong> Approving this application will:
+                        <ul class="mb-0 mt-2">
+                            <li>Create a new loan record</li>
+                            <li>Generate an amortization schedule</li>
+                            <li>Automatically generate a loan agreement PDF</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success">Confirm Approval</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Reject Modal -->
+<div class="modal fade" id="rejectModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">Reject Loan Application</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="{% url 'loans:reject_loan_application' application.application_id %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <p>Please provide a reason for rejecting this application:</p>
+                    <div class="mb-3">
+                        <label for="rejection_reason" class="form-label">Rejection Reason</label>
+                        <textarea class="form-control" id="rejection_reason" name="rejection_reason" rows="4"
+                            required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger">Confirm Rejection</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

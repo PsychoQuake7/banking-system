@@ -53,10 +53,93 @@ def transaction_list_view(request):
 
 @staff_required
 def transaction_create_view(request):
-    # This view handles deposits and withdrawals, which are staff operations
-    return render(request, 'transactions/transaction_create.html')
+    from .forms import TransactionForm
+    from accounts.models import Account
+    from django.db import transaction as db_transaction
+    from django.contrib import messages
+    from django.shortcuts import redirect
+
+    if request.method == 'POST':
+        form = TransactionForm(request.POST)
+        if form.is_valid():
+            account_number = form.cleaned_data['account_number']
+            transaction_type = form.cleaned_data['transaction_type']
+            amount = form.cleaned_data['amount']
+            description = form.cleaned_data['description']
+
+            try:
+                account = Account.objects.get(account_number=account_number)
+                
+                if transaction_type == 'withdrawal':
+                    account.withdraw(amount, description=description)
+                    success_msg = f"Successfully withdrew ₱{amount} from account {account_number}."
+                else:
+                    account.deposit(amount, description=description)
+                    success_msg = f"Successfully deposited ₱{amount} to account {account_number}."
+
+                messages.success(request, success_msg)
+                return redirect('transactions:transaction_list')
+
+            except Account.DoesNotExist:
+                messages.error(request, f"Account with number {account_number} not found.")
+            except ValueError as e:
+                # Catch insufficient funds error from withdraw method
+                messages.error(request, str(e))
+            except Exception as e:
+                messages.error(request, f"Transaction failed: {str(e)}")
+    else:
+        form = TransactionForm()
+
+    return render(request, 'transactions/transaction_create.html', {'form': form})
 
 @login_required
 def transfer_create_view(request):
-    # Borrowers can transfer, but logic (in form/post) must validate source account ownership
-    return render(request, 'transactions/transfer_create.html')
+    from .forms import TransferForm
+    from accounts.models import Account
+    from django.db import transaction as db_transaction
+    from django.contrib import messages
+    from django.shortcuts import redirect
+
+    if request.method == 'POST':
+        form = TransferForm(request.POST, user=request.user)
+        if form.is_valid():
+            source_account = form.cleaned_data['source_account']
+            target_account_number = form.cleaned_data['target_account_number']
+            amount = form.cleaned_data['amount']
+            description = form.cleaned_data['description']
+
+            if source_account.account_number == target_account_number:
+                messages.error(request, "Cannot transfer to the same account.")
+                return render(request, 'transactions/transfer_create.html', {'form': form})
+
+            try:
+                target_account = Account.objects.get(account_number=target_account_number)
+                
+                with db_transaction.atomic():
+                    # Withdraw from source
+                    source_account.withdraw(
+                        amount, 
+                        description=f"Transfer to {target_account_number}: {description}",
+                        transaction_type='withdrawal' # Or 'transfer_out' if we add that type
+                    )
+                    
+                    # Deposit to target
+                    target_account.deposit(
+                        amount, 
+                        description=f"Transfer from {source_account.account_number}: {description}",
+                        transaction_type='deposit' # Or 'transfer_in'
+                    )
+                    
+                    messages.success(request, f"Successfully transferred ₱{amount} to {target_account_number}.")
+                    return redirect('transactions:transaction_list')
+
+            except Account.DoesNotExist:
+                messages.error(request, f"Target account {target_account_number} not found.")
+            except ValueError as e:
+                messages.error(request, str(e))
+            except Exception as e:
+                messages.error(request, f"Transfer failed: {str(e)}")
+    else:
+        form = TransferForm(user=request.user)
+
+    return render(request, 'transactions/transfer_create.html', {'form': form})

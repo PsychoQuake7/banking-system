@@ -48,10 +48,14 @@ INSTALLED_APPS = [
     'loans',
     'notifications',
     'audit',
+    
+    # Third party apps
     'django.contrib.sites',
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
+    'widget_tweaks',
+    'django.contrib.humanize',
 ]
 
 SITE_ID = 1
@@ -69,7 +73,7 @@ LOGIN_REDIRECT_URL = 'dashboard'
 ACCOUNT_SIGNUP_REDIRECT_URL = 'dashboard'
 LOGOUT_REDIRECT_URL = 'account_login'
 ACCOUNT_LOGIN_METHODS = {'email', 'username'}  # Allow login with username or email
-ACCOUNT_EMAIL_REQUIRED = True  # Require email for registration
+ACCOUNT_SIGNUP_FIELDS = ['email*', 'username*', 'password1*', 'password2*']  # Required fields for signup
 ACCOUNT_EMAIL_VERIFICATION = 'optional'  # Email verification is optional
 
 # Custom allauth form and adapter
@@ -175,3 +179,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Email Configuration
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+DEFAULT_FROM_EMAIL = 'noreply@kayamanan.bank'

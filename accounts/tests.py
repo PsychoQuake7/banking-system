@@ -1,11 +1,13 @@
 from django.test import TestCase, Client
 from django.urls import reverse
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 class AuthenticationTests(TestCase):
     def setUp(self):
         self.client = Client()
-        self.user = User.objects.create_user(username='testuser', password='testpassword', email='test@example.com')
+        self.user = User.objects.create_user(username='testuser', password='testpassword', email='test@example.com', role='borrower')
 
     def test_login_page_loads(self):
         response = self.client.get(reverse('account_login'))

@@ -13,8 +13,9 @@ class LoanApplication(models.Model):
 
     application_id = models.AutoField(primary_key=True)
     client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name='loan_applications')
-    loan_officer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='processed_applications')
+    loan_officer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='processed_applications', null=True, blank=True)
     loan_amount = models.DecimalField(max_digits=15, decimal_places=2)
+    term_months = models.IntegerField(default=12)
     purpose = models.CharField(max_length=255)
     application_date = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
@@ -76,6 +77,9 @@ class Loan(models.Model):
     start_date = models.DateField()
     end_date = models.DateField()
     remaining_balance = models.DecimalField(max_digits=15, decimal_places=2)
+    agreement_document = models.FileField(upload_to='loan_agreements/', null=True, blank=True)
+    is_disbursed = models.BooleanField(default=False)
+    disbursement_date = models.DateTimeField(null=True, blank=True)
     STATUS = [
         ('active','Active'),
         ('paid','Paid'),
@@ -85,6 +89,190 @@ class Loan(models.Model):
 
     def __str__(self):
         return f"Loan {self.loan_id} - {self.application.client}"
+    
+    def get_agreement_filename(self):
+        """Generate standardized filename for loan agreement"""
+        return f"loan_agreement_{self.loan_id}_{self.application.client.client_id}.pdf"
+
+    def get_next_payment_due(self):
+        """
+        Get the next payment due (overdue or pending).
+        
+        Returns:
+            AmortizationSchedule object or None if no payments due
+        """
+        # First check for overdue payments
+        overdue = self.schedules.filter(status='overdue').order_by('due_date').first()
+        if overdue:
+            return overdue
+            
+        # Then check for pending payments
+        return self.schedules.filter(status='pending').order_by('due_date').first()
+    
+    def disburse_funds(self, account):
+        """
+        Disburse loan funds to the specified account.
+        
+        Args:
+            account: Account to credit funds to
+            
+        Returns:
+            dict with 'success' (bool), 'message' (str), 'transaction' (Transaction or None)
+        """
+        from transactions.models import Transaction
+        from django.db import transaction as db_transaction
+        from django.utils import timezone
+        
+        if self.is_disbursed:
+            return {
+                'success': False,
+                'message': 'Loan has already been disbursed.',
+                'transaction': None
+            }
+            
+        if account.client != self.application.client:
+            return {
+                'success': False,
+                'message': 'Target account must belong to the borrower.',
+                'transaction': None
+            }
+            
+        try:
+            with db_transaction.atomic():
+                # Use account.deposit to handle transaction creation and balance update
+                transaction = account.deposit(
+                    amount=self.loan_amount,
+                    description=f'Loan disbursement for Loan #{self.loan_id}',
+                    transaction_type='disbursement'
+                )
+                
+                # Link transaction to loan
+                transaction.loan = self
+                transaction.save()
+                
+                # Update loan status
+                self.is_disbursed = True
+                self.disbursement_date = timezone.now()
+                self.save()
+                
+                return {
+                    'success': True,
+                    'message': f'Successfully disbursed ₱{self.loan_amount:,.2f} to account {account.account_number}.',
+                    'transaction': transaction
+                }
+        except Exception as e:
+            return {
+                'success': False,
+                'message': f'Disbursement failed: {str(e)}',
+                'transaction': None
+            }
+
+    def apply_payment(self, amount, account):
+        """
+        Process a loan payment and update balance.
+        
+        Args:
+            amount: Payment amount (Decimal)
+            account: Account to deduct payment from
+            
+        Returns:
+            dict with 'success' (bool), 'message' (str), 'transaction' (Transaction or None)
+        """
+        from transactions.models import Transaction
+        from django.db import transaction as db_transaction
+        from decimal import Decimal
+        
+        # Get next pending payment
+        next_payment = self.get_next_payment_due()
+        if not next_payment:
+            return {
+                'success': False,
+                'message': 'No pending payments found for this loan.',
+                'transaction': None
+            }
+        
+        # Validate payment amount
+        if amount < next_payment.total_payment:
+            return {
+                'success': False,
+                'message': f'Payment amount must be at least ₱{next_payment.total_payment:,.2f}',
+                'transaction': None
+            }
+        
+        # Check account balance
+        if account.current_balance < amount:
+            return {
+                'success': False,
+                'message': 'Insufficient funds in account.',
+                'transaction': None
+            }
+        
+        # Process payment in atomic transaction
+        try:
+            with db_transaction.atomic():
+                # Create transaction record
+                payment_transaction = Transaction.objects.create(
+                    account=account,
+                    loan=self,
+                    transaction_type='payment',
+                    amount=amount,
+                    description=f'Loan payment #{next_payment.installment_number} for Loan #{self.loan_id}'
+                )
+                
+                # Update account balance
+                account.current_balance -= amount
+                account.save()
+                
+                # Update loan remaining balance (subtract principal only)
+                self.remaining_balance -= next_payment.principal_amount
+                self.save()
+                
+                # Mark schedule entry as paid
+                next_payment.status = 'paid'
+                next_payment.save()
+                
+                # Check if loan is fully paid
+                self.check_if_paid_off()
+                
+                return {
+                    'success': True,
+                    'message': f'Payment of ₱{amount:,.2f} processed successfully.',
+                    'transaction': payment_transaction
+                }
+        except Exception as e:
+            return {
+                'success': False,
+                'message': f'Payment processing failed: {str(e)}',
+                'transaction': None
+            }
+    
+    def check_if_paid_off(self):
+        """
+        Check if all payments are complete and update loan status if paid off.
+        """
+        pending_payments = self.schedules.filter(status='pending').count()
+        if pending_payments == 0:
+            self.status = 'paid'
+            self.remaining_balance = Decimal('0.00')
+            self.save()
+    
+    def update_schedule_status(self):
+        """
+        Update amortization schedule entries to mark overdue payments.
+        
+        Returns:
+            int: Number of payments marked as overdue
+        """
+        from django.utils import timezone
+        today = timezone.now().date()
+        
+        # Mark overdue payments (pending and past due date)
+        overdue_count = self.schedules.filter(
+            status='pending',
+            due_date__lt=today
+        ).update(status='overdue')
+        
+        return overdue_count
     
     def get_monthly_payment(self) -> Decimal:
         """
@@ -135,9 +323,25 @@ class AmortizationSchedule(models.Model):
         ('overdue','Overdue'),
     ]
     status = models.CharField(max_length=20, choices=STATUS, default='pending')
+    reminder_sent = models.BooleanField(default=False)
 
     class Meta:
         ordering = ['due_date']
 
     def __str__(self):
         return f"{self.loan} - Installment {self.installment_number}"
+
+    def is_overdue(self):
+        """Check if this payment is overdue."""
+        from django.utils import timezone
+        if self.status == 'pending':
+            return self.due_date < timezone.now().date()
+        return self.status == 'overdue'
+
+    @property
+    def days_overdue(self):
+        """Calculate days overdue (0 if not overdue)."""
+        from django.utils import timezone
+        if self.is_overdue():
+            return (timezone.now().date() - self.due_date).days
+        return 0

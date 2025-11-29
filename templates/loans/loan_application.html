@@ -54,45 +54,74 @@
                         </select>
                     </div>
 
-                    <!-- Client Information -->
+                    <!-- Client Information & Eligibility -->
                     <div class="card mb-4">
-                        <div class="card-header bg-light">
-                            <h6 class="mb-0">Your Information</h6>
+                        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0">Eligibility Assessment</h6>
+                            <a href="{% url 'loans:loan_eligibility_check' %}" class="btn btn-sm btn-outline-primary"
+                                target="_blank">
+                                <i class="fas fa-external-link-alt me-1"></i>Check Details
+                            </a>
                         </div>
                         <div class="card-body">
-                            <div class="row">
+                            {% if eligibility_data %}
+                            <div class="row mb-3">
                                 <div class="col-md-6">
-                                    <p><strong>Monthly Income:</strong> ₱{{
-                                        client.monthly_income|default:0|floatformat:2 }}</p>
+                                    <p class="mb-1"><strong>Monthly Income:</strong></p>
+                                    <p class="h5">₱{{ client.monthly_income|floatformat:2 }}</p>
                                 </div>
                                 <div class="col-md-6">
-                                    <p><strong>Credit Score:</strong>
+                                    <p class="mb-1"><strong>Credit Score:</strong></p>
+                                    <p class="h5">
                                         <span
                                             class="badge bg-{% if client.credit_score >= 700 %}success{% elif client.credit_score >= 600 %}warning{% else %}danger{% endif %}">
-                                            {{ client.credit_score|default:0 }}
+                                            {{ client.credit_score }}
                                         </span>
                                     </p>
                                 </div>
                             </div>
-                            <div class="row">
+
+                            <div class="row mb-3">
                                 <div class="col-12">
-                                    <p><strong>Estimated Eligibility Score:</strong>
+                                    <div class="d-flex justify-content-between align-items-end mb-1">
+                                        <span><strong>Eligibility Score:</strong></span>
                                         <span
-                                            class="badge bg-{% if eligibility_score >= 70 %}success{% elif eligibility_score >= 50 %}warning{% else %}danger{% endif %}">
-                                            {{ eligibility_score|default:0 }}%
+                                            class="fw-bold {% if eligibility_data.eligibility_score >= 80 %}text-success{% elif eligibility_data.eligibility_score >= 50 %}text-warning{% else %}text-danger{% endif %}">
+                                            {{ eligibility_data.eligibility_score }}/100
                                         </span>
-                                    </p>
-                                    <div class="progress mb-2" style="height: 20px;">
-                                        <div class="progress-bar {% if eligibility_score >= 70 %}bg-success{% elif eligibility_score >= 50 %}bg-warning{% else %}bg-danger{% endif %}"
-                                            style="width: {{ eligibility_score|default:0 }}%">
-                                            {{ eligibility_score|default:0 }}%
+                                    </div>
+                                    <div class="progress mb-2" style="height: 10px;">
+                                        <div class="progress-bar {% if eligibility_data.eligibility_score >= 80 %}bg-success{% elif eligibility_data.eligibility_score >= 50 %}bg-warning{% else %}bg-danger{% endif %}"
+                                            role="progressbar" style="width: {{ eligibility_data.eligibility_score }}%">
                                         </div>
                                     </div>
-                                    <small class="text-muted">
-                                        Based on your income, credit score, and existing accounts
+                                    <small class="text-muted d-block mb-2">
+                                        Recommendation: <span class="fw-bold">{{ eligibility_data.recommendation
+                                            }}</span>
                                     </small>
                                 </div>
                             </div>
+
+                            {% if eligibility_data.warnings %}
+                            <div class="alert alert-warning py-2 mb-0">
+                                <small>
+                                    <i class="fas fa-exclamation-triangle me-1"></i>
+                                    <strong>Note:</strong>
+                                    <ul class="mb-0 ps-3 mt-1">
+                                        {% for warning in eligibility_data.warnings %}
+                                        <li>{{ warning }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                </small>
+                            </div>
+                            {% endif %}
+
+                            {% else %}
+                            <div class="alert alert-info mb-0">
+                                <i class="fas fa-info-circle me-2"></i>
+                                Complete your profile to see eligibility details.
+                            </div>
+                            {% endif %}
                         </div>
                     </div>
 

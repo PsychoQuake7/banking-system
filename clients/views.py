@@ -17,10 +17,14 @@ def client_detail_view(request, id):
     client = get_object_or_404(Client, client_id=id)
     accounts = client.accounts.all()
     loans = client.loan_applications.filter(loan__isnull=False).select_related('loan')
+    from loans.utils import calculate_eligibility_score
+    eligibility_data = calculate_eligibility_score(client)
+    
     context = {
         'client': client,
         'accounts': accounts,
         'loans': [app.loan for app in loans],
+        'eligibility_data': eligibility_data,
     }
     return render(request, 'clients/client_detail.html', context)
 

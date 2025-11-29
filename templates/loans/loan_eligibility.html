@@ -1,0 +1,215 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Check Loan Eligibility | Kayamanan Banking{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="h2 mb-3">Check Loan Eligibility</h1>
+            <p class="text-muted">
+                Find out how much you can borrow and see a detailed breakdown of your eligibility score.
+                This check does not affect your credit score.
+            </p>
+        </div>
+        <div class="col-md-4 text-md-end">
+            <a href="{% url 'loans:loan_application' %}" class="btn btn-primary">
+                <i class="fas fa-file-signature me-2"></i>Apply for a Loan
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Eligibility Calculator Form -->
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Check Eligibility</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="requested_amount" class="form-label">Desired Loan Amount (Optional)</label>
+                            <div class="input-group">
+                                <span class="input-group-text">₱</span>
+                                <input type="number" class="form-control" id="requested_amount" name="requested_amount"
+                                    value="{{ requested_amount|default:'' }}" step="1000" min="1000">
+                            </div>
+                            <div class="form-text">Enter an amount to see if you qualify for it.</div>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-calculator me-2"></i>Check Eligibility
+                        </button>
+                    </form>
+
+                    <hr class="my-4">
+
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="flex-shrink-0">
+                            <div class="rounded-circle bg-light d-flex align-items-center justify-content-center"
+                                style="width: 50px; height: 50px;">
+                                <i class="fas fa-wallet text-primary fa-lg"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="mb-0">Monthly Income</h6>
+                            <div class="fw-bold">₱{{ client.monthly_income|intcomma }}</div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="rounded-circle bg-light d-flex align-items-center justify-content-center"
+                                style="width: 50px; height: 50px;">
+                                <i class="fas fa-chart-line text-success fa-lg"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="mb-0">Credit Score</h6>
+                            <div class="fw-bold">{{ client.credit_score }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Eligibility Results -->
+        <div class="col-lg-8 mb-4">
+            {% if eligibility_data %}
+            <div class="card shadow-sm mb-4">
+                <div class="card-body p-4">
+                    <div class="row align-items-center">
+                        <div class="col-md-6 text-center text-md-start mb-4 mb-md-0">
+                            <h5 class="text-muted mb-1">Overall Eligibility Score</h5>
+                            <div class="display-4 fw-bold 
+                                {% if eligibility_data.eligibility_score >= 80 %}text-success
+                                {% elif eligibility_data.eligibility_score >= 65 %}text-primary
+                                {% elif eligibility_data.eligibility_score >= 50 %}text-warning
+                                {% else %}text-danger{% endif %}">
+                                {{ eligibility_data.eligibility_score }}<span class="fs-4 text-muted">/100</span>
+                            </div>
+                            <div class="badge rounded-pill 
+                                {% if eligibility_data.eligibility_score >= 80 %}bg-success
+                                {% elif eligibility_data.eligibility_score >= 65 %}bg-primary
+                                {% elif eligibility_data.eligibility_score >= 50 %}bg-warning text-dark
+                                {% else %}bg-danger{% endif %} mb-2">
+                                {{ eligibility_data.recommendation }}
+                            </div>
+                        </div>
+                        <div class="col-md-6 border-start-md ps-md-4">
+                            <h5 class="text-muted mb-1">Maximum Loan Amount</h5>
+                            <div class="h2 fw-bold text-dark mb-2">₱{{ eligibility_data.max_loan_amount|intcomma }}
+                            </div>
+                            <p class="small text-muted mb-0">
+                                Based on your income, existing debts, and credit profile.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                {% if eligibility_data.warnings %}
+                <div class="card-footer bg-danger bg-opacity-10 border-top-0">
+                    <h6 class="text-danger mb-2"><i class="fas fa-exclamation-triangle me-2"></i>Attention Needed:</h6>
+                    <ul class="mb-0 ps-3 text-danger small">
+                        {% for warning in eligibility_data.warnings %}
+                        <li>{{ warning }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="row">
+                <!-- Factor Breakdown -->
+                <div class="col-md-12">
+                    <h5 class="mb-3">Score Breakdown</h5>
+                </div>
+
+                <!-- Credit Score Factor -->
+                <div class="col-md-4 mb-3">
+                    <div class="card h-100 border-0 bg-light">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h6 class="card-title mb-0">Credit History</h6>
+                                <span class="badge bg-secondary">40% Weight</span>
+                            </div>
+                            <div class="progress mb-2" style="height: 6px;">
+                                <div class="progress-bar bg-info" role="progressbar"
+                                    style="width: {{ eligibility_data.factors.credit_score.factor_points }}%"></div>
+                            </div>
+                            <div class="d-flex justify-content-between small text-muted">
+                                <span>Score: {{ eligibility_data.factors.credit_score.value }}</span>
+                                <span>{{ eligibility_data.factors.credit_score.factor_points }} pts</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DTI Factor -->
+                <div class="col-md-4 mb-3">
+                    <div class="card h-100 border-0 bg-light">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h6 class="card-title mb-0">Debt-to-Income</h6>
+                                <span class="badge bg-secondary">35% Weight</span>
+                            </div>
+                            <div class="progress mb-2" style="height: 6px;">
+                                <div class="progress-bar bg-warning" role="progressbar"
+                                    style="width: {{ eligibility_data.factors.dti_ratio.factor_points }}%"></div>
+                            </div>
+                            <div class="d-flex justify-content-between small text-muted">
+                                <span>Ratio: {{ eligibility_data.factors.dti_ratio.value }}%</span>
+                                <span>{{ eligibility_data.factors.dti_ratio.factor_points }} pts</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Loan Burden Factor -->
+                <div class="col-md-4 mb-3">
+                    <div class="card h-100 border-0 bg-light">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h6 class="card-title mb-0">Loan Burden</h6>
+                                <span class="badge bg-secondary">25% Weight</span>
+                            </div>
+                            <div class="progress mb-2" style="height: 6px;">
+                                <div class="progress-bar bg-success" role="progressbar"
+                                    style="width: {{ eligibility_data.factors.loan_burden.factor_points }}%"></div>
+                            </div>
+                            <div class="d-flex justify-content-between small text-muted">
+                                <span>Active Loans: {{ eligibility_data.factors.loan_burden.active_loan_count }}</span>
+                                <span>{{ eligibility_data.factors.loan_burden.factor_points }} pts</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {% if eligibility_data.suggestions %}
+            <div class="card mt-3 border-info">
+                <div class="card-header bg-info bg-opacity-10 text-info border-bottom-0">
+                    <h6 class="mb-0"><i class="fas fa-lightbulb me-2"></i>Suggestions for Improvement</h6>
+                </div>
+                <div class="card-body">
+                    <ul class="mb-0 ps-3">
+                        {% for suggestion in eligibility_data.suggestions %}
+                        <li class="mb-1">{{ suggestion }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            {% endif %}
+
+            {% else %}
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>
+                Please ensure your profile is complete to see your eligibility score.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

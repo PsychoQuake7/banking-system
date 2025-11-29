@@ -184,8 +184,9 @@
             </div>
             <div class="card-body">
                 <div class="progress mb-2" style="height: 25px;">
+                    {% widthratio client.credit_score|default:0 1000 100 as score_percent %}
                     <div class="progress-bar {% if client.credit_score >= 700 %}bg-success{% elif client.credit_score >= 600 %}bg-warning{% else %}bg-danger{% endif %}"
-                        style="width: {% widthratio client.credit_score|default:0 1000 100 %}%">
+                        style="width: {{ score_percent }}%">
                         {{ client.credit_score }}/1000
                     </div>
                 </div>
@@ -200,6 +201,40 @@
                     Poor - High Risk
                     {% endif %}
                 </small>
+            </div>
+        </div>
+
+        <!-- Loan Eligibility -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-calculator me-2"></i>Loan Eligibility</h5>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-3">
+                    <h2
+                        class="display-4 {% if eligibility_data.eligibility_score >= 80 %}text-success{% elif eligibility_data.eligibility_score >= 50 %}text-warning{% else %}text-danger{% endif %}">
+                        {{ eligibility_data.eligibility_score }}
+                    </h2>
+                    <p class="text-muted">Eligibility Score</p>
+                </div>
+
+                <p><strong>Max Loan Amount:</strong><br>
+                    <span class="h5">₱{{ eligibility_data.max_loan_amount|floatformat:2 }}</span>
+                </p>
+
+                <p><strong>Recommendation:</strong><br>
+                    {{ eligibility_data.recommendation }}
+                </p>
+
+                {% if eligibility_data.warnings %}
+                <div class="alert alert-warning mt-3">
+                    <ul class="mb-0 ps-3">
+                        {% for warning in eligibility_data.warnings %}
+                        <li>{{ warning }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
             </div>
         </div>
     </div>

@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block title %}Disburse Loan Funds - Kayamanan Bank{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">Disburse Loan Funds</h4>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> You are about to disburse funds for <strong>Loan #{{ loan.loan_id
+                        }}</strong>.
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h5>Client Details</h5>
+                        <p class="mb-1"><strong>Name:</strong> {{ loan.application.client.first_name }} {{
+                            loan.application.client.last_name }}</p>
+                        <p class="mb-1"><strong>Client ID:</strong> {{ loan.application.client.client_id }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h5>Loan Details</h5>
+                        <p class="mb-1"><strong>Amount:</strong> ₱{{ loan.loan_amount }}</p>
+                        <p class="mb-1"><strong>Term:</strong> {{ loan.term_months }} months</p>
+                    </div>
+                </div>
+
+                <form method="post">
+                    {% csrf_token %}
+
+                    <div class="mb-4">
+                        <label for="account_id" class="form-label">Select Target Account</label>
+                        <select name="account_id" id="account_id" class="form-select" required>
+                            <option value="" selected disabled>Choose an account...</option>
+                            {% for account in accounts %}
+                            <option value="{{ account.account_id }}">
+                                {{ account.account_number }} ({{ account.account_type|title }}) - Balance: ₱{{
+                                account.current_balance }}
+                            </option>
+                            {% empty %}
+                            <option disabled>No active accounts found for this client.</option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-text">The loan amount of ₱{{ loan.loan_amount }} will be credited to this
+                            account.</div>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-success btn-lg" {% if not accounts %}disabled{% endif %}>
+                            <i class="fas fa-money-bill-wave"></i> Confirm Disbursement
+                        </button>
+                        <a href="{% url 'loan_detail' loan.loan_id %}" class="btn btn-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

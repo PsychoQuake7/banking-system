@@ -1,0 +1,16 @@
+Subject: Payment Reminder: Loan #{{ loan_id }} Due Soon
+
+Dear {{ client_name }},
+
+This is a reminder that your loan payment of ₱{{ amount }} is due on {{ due_date }}.
+
+Loan Details:
+- Loan ID: #{{ loan_id }}
+- Installment: {{ installment_number }}
+- Amount Due: ₱{{ amount }}
+- Due Date: {{ due_date }}
+
+Please ensure your account has sufficient funds to avoid penalties.
+
+Thank you,
+Kayamanan Bank

@@ -116,9 +116,24 @@
             </div>
             <div class="card-body">
                 <div class="d-grid gap-2">
+                    {% if loan.agreement_document %}
+                    <a href="{% url 'download_loan_agreement' loan.loan_id %}"
+                        class="btn btn-outline-primary w-100 mb-2">
+                        <i class="fas fa-file-pdf"></i> Download Agreement
+                    </a>
+                    {% endif %}
+
+                    {% if user.role == 'admin' or user.role == 'staff' %}
+                    {% if not loan.is_disbursed %}
+                    <a href="{% url 'disburse_loan' loan.loan_id %}" class="btn btn-success w-100 mb-2">
+                        <i class="fas fa-money-bill-wave"></i> Disburse Funds
+                    </a>
+                    {% endif %}
+                    {% endif %}
+
                     {% if loan.status == 'active' %}
-                    <a href="{% url 'loans:make_payment' loan.loan_id %}" class="btn btn-success">
-                        <i class="fas fa-money-bill-wave me-2"></i>Make Payment
+                    <a href="{% url 'make_payment' loan.loan_id %}" class="btn btn-primary w-100">
+                        <i class="fas fa-credit-card"></i> Make Payment
                     </a>
                     {% endif %}
                     <a href="{% url 'loans:amortization_schedule' loan.loan_id %}" class="btn btn-outline-primary">

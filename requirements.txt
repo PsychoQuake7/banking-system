@@ -3,4 +3,8 @@ Django==5.2.8
 mysql-connector-python==9.5.0
 sqlparse==0.5.3
 cryptography
-
+django-allauth
+django-widget-tweaks
+mysqlclient
+pymysql
+reportlab
