@@ -212,6 +212,16 @@ def disburse_loan_view(request, id):
         result = loan.disburse_funds(account)
         
         if result['success']:
+            # Send Notification
+            from notifications.services import NotificationService
+            NotificationService.send_notification(
+                user=loan.application.client.user,
+                subject="Loan Disbursed",
+                message=f"Dear {loan.application.client.first_name}, your loan of ₱{loan.loan_amount:,.2f} has been disbursed to your account {account.account_number}.",
+                notification_type='loan_approved',
+                related_entity_type='loan',
+                related_entity_id=loan.loan_id
+            )
             messages.success(request, result['message'])
             return redirect('loan_detail', id=loan.loan_id)
         else:
@@ -350,6 +360,17 @@ def approve_loan_application_view(request, id):
         messages.success(request, f'Loan application approved successfully! Agreement document generated.')
     except Exception as e:
         messages.warning(request, f'Loan approved but document generation failed: {str(e)}')
+    
+    # Send Notification
+    from notifications.services import NotificationService
+    NotificationService.send_notification(
+        user=application.client.user,
+        subject="Loan Approved",
+        message=f"Dear {application.client.first_name}, your loan application #{application.application_id} for ₱{application.loan_amount:,.2f} has been approved. The funds will be disbursed shortly.",
+        notification_type='loan_approved',
+        related_entity_type='loan',
+        related_entity_id=loan.loan_id
+    )
     
     return redirect('loans:loan_detail', id=loan.loan_id)
 

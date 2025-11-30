@@ -100,8 +100,10 @@
                                 <td>{{ transaction.transaction_date|date:"M d, Y" }}</td>
                                 <td>{{ transaction.description|default:"No description" }}</td>
                                 <td>{{ transaction.account.account_number }}</td>
-                                <td class="{% if transaction.transaction_type == 'deposit' %}text-success{% else %}text-danger{% endif %}">
-                                    {% if transaction.transaction_type == 'deposit' %}+{% else %}-{% endif %}₱{{ transaction.amount }}
+                                <td
+                                    class="{% if transaction.transaction_type == 'deposit' %}text-success{% else %}text-danger{% endif %}">
+                                    {% if transaction.transaction_type == 'deposit' %}+{% else %}-{% endif %}₱{{
+                                    transaction.amount }}
                                 </td>
                             </tr>
                             {% endfor %}
@@ -145,17 +147,18 @@
             </div>
             <div class="card-body">
                 {% if notifications %}
-                    {% for notification in notifications %}
-                    <div class="alert alert-{% if notification.notification_type == 'payment_reminder' %}warning{% else %}info{% endif %} py-2 mb-2">
-                        <small>
-                            <strong>{{ notification.subject }}</strong><br>
-                            {{ notification.message }}<br>
-                            <em class="text-muted">{{ notification.sent_date|timesince }} ago</em>
-                        </small>
-                    </div>
-                    {% endfor %}
+                {% for notification in notifications %}
+                <div
+                    class="alert alert-{% if notification.notification_type == 'payment_reminder' %}warning{% else %}info{% endif %} py-2 mb-2">
+                    <small>
+                        <strong>{{ notification.subject }}</strong><br>
+                        {{ notification.message }}<br>
+                        <em class="text-muted">{{ notification.sent_date|timesince }} ago</em>
+                    </small>
+                </div>
+                {% endfor %}
                 {% else %}
-                    <p class="text-muted">No new notifications.</p>
+                <p class="text-muted">No new notifications.</p>
                 {% endif %}
             </div>
         </div>
@@ -181,4 +184,112 @@
         {% endif %}
     </div>
 </div>
+</div>
+</div>
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Configuration
+        const UPDATE_INTERVAL = 30000; // 30 seconds
+        const API_URL = "{% url 'dashboard_data_api' %}";
+
+        // Elements to update
+        const els = {
+            totalBalance: document.querySelector('.card.bg-primary h2'),
+            activeLoans: document.querySelector('.card.bg-success h2'),
+            accountsCount: document.querySelector('.card.bg-info h2'),
+            pendingLoans: document.querySelector('.card.bg-warning h2'),
+            notificationsBadge: document.querySelector('.badge.bg-primary'),
+            transactionsBody: document.querySelector('table tbody'),
+            lastUpdated: null // Will be created
+        };
+
+        // Add last updated indicator
+        const headerCol = document.querySelector('.col-12');
+        if (headerCol) {
+            const indicator = document.createElement('small');
+            indicator.className = 'text-muted d-block mt-1';
+            indicator.innerHTML = '<i class="fas fa-sync-alt me-1"></i>Last updated: <span id="last-updated-time">Just now</span>';
+            headerCol.appendChild(indicator);
+            els.lastUpdated = document.getElementById('last-updated-time');
+        }
+
+        function formatCurrency(amount) {
+            return '₱' + parseFloat(amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        function updateDashboard() {
+            fetch(API_URL)
+                .then(response => {
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    return response.json();
+                })
+                .then(data => {
+                    // Update stats with animation effect
+                    updateElement(els.totalBalance, formatCurrency(data.total_balance));
+                    updateElement(els.activeLoans, data.active_loans_count);
+                    updateElement(els.accountsCount, data.accounts_count);
+                    updateElement(els.pendingLoans, data.pending_loans_count);
+
+                    if (els.notificationsBadge) {
+                        els.notificationsBadge.textContent = data.notifications_count;
+                    }
+
+                    if (els.lastUpdated) {
+                        els.lastUpdated.textContent = data.last_updated;
+                    }
+
+                    // Update transactions table
+                    updateTransactions(data.recent_transactions);
+                })
+                .catch(error => console.error('Error fetching dashboard data:', error));
+        }
+
+        function updateElement(el, newValue) {
+            if (!el || el.textContent === newValue) return;
+
+            el.style.opacity = '0';
+            setTimeout(() => {
+                el.textContent = newValue;
+                el.style.opacity = '1';
+            }, 200);
+        }
+
+        function updateTransactions(transactions) {
+            if (!els.transactionsBody) return;
+
+            if (transactions.length === 0) {
+                els.transactionsBody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">No recent transactions</td></tr>';
+                return;
+            }
+
+            const html = transactions.map(t => `
+            <tr>
+                <td>${t.date}</td>
+                <td>${t.description}</td>
+                <td>${t.account}</td>
+                <td class="${t.type === 'deposit' ? 'text-success' : 'text-danger'}">
+                    ${t.type === 'deposit' ? '+' : '-'}₱${t.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                </td>
+            </tr>
+        `).join('');
+
+            if (els.transactionsBody.innerHTML.replace(/\s/g, '') !== html.replace(/\s/g, '')) {
+                els.transactionsBody.style.opacity = '0';
+                setTimeout(() => {
+                    els.transactionsBody.innerHTML = html;
+                    els.transactionsBody.style.opacity = '1';
+                }, 200);
+            }
+        }
+
+        // Start polling
+        setInterval(updateDashboard, UPDATE_INTERVAL);
+
+        // Initial update check after 5 seconds
+        setTimeout(updateDashboard, 5000);
+    });
+</script>
+{% endblock %}
 {% endblock %}

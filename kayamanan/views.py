@@ -121,3 +121,77 @@ def dashboard_view(request):
         }]
     
     return render(request, 'dashboard.html', context)
+
+@login_required
+def dashboard_data_api(request):
+    """
+    API endpoint for real-time dashboard updates.
+    Returns JSON data for balances, counts, and recent transactions.
+    """
+    from django.http import JsonResponse
+    
+    try:
+        client = Client.objects.get(user=request.user)
+        accounts = Account.objects.filter(client=client, is_active=True)
+        
+        # Calculate totals
+        total_balance = accounts.aggregate(total=Sum('current_balance'))['total'] or 0
+        
+        # Get counts
+        active_loans = Loan.objects.filter(application__client=client, status='active').count()
+        pending_loans = LoanApplication.objects.filter(client=client, status='pending').count()
+        accounts_count = accounts.count()
+        
+        # Get recent transactions
+        recent_transactions = Transaction.objects.filter(
+            account__client=client
+        ).select_related('account').order_by('-transaction_date')[:10]
+        
+        transactions_data = []
+        for t in recent_transactions:
+            transactions_data.append({
+                'date': t.transaction_date.strftime('%b %d, %Y'),
+                'description': t.description or "No description",
+                'account': t.account.account_number,
+                'amount': float(t.amount),
+                'type': t.transaction_type
+            })
+            
+        # Get notifications count (simplified for now)
+        today = timezone.now().date()
+        overdue_count = AmortizationSchedule.objects.filter(
+            loan__application__client=client,
+            status='overdue'
+        ).count()
+        
+        upcoming_count = AmortizationSchedule.objects.filter(
+            loan__application__client=client,
+            status='pending',
+            due_date__gte=today,
+            due_date__lte=today + timedelta(days=7)
+        ).count()
+        
+        notifications_count = overdue_count + upcoming_count
+        if pending_loans > 0:
+            notifications_count += 1
+            
+        return JsonResponse({
+            'total_balance': float(total_balance),
+            'active_loans_count': active_loans,
+            'pending_loans_count': pending_loans,
+            'accounts_count': accounts_count,
+            'notifications_count': notifications_count,
+            'recent_transactions': transactions_data,
+            'last_updated': timezone.now().strftime('%H:%M:%S')
+        })
+        
+    except Client.DoesNotExist:
+        return JsonResponse({
+            'total_balance': 0,
+            'active_loans_count': 0,
+            'pending_loans_count': 0,
+            'accounts_count': 0,
+            'notifications_count': 1, # "Complete profile" notification
+            'recent_transactions': [],
+            'last_updated': timezone.now().strftime('%H:%M:%S')
+        })

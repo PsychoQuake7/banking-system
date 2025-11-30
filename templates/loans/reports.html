@@ -1,0 +1,179 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Loan Reports | Kayamanan Banking{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h2 mb-0">Loan Reports</h1>
+        <div class="d-flex align-items-center gap-3">
+            <div class="text-muted">
+                Generated on {{ today|date:"F d, Y" }}
+            </div>
+            <a href="?export=pdf" class="btn btn-outline-danger btn-sm" target="_blank">
+                <i class="fas fa-file-pdf me-2"></i>Export PDF
+            </a>
+            <a href="?export=excel" class="btn btn-outline-success btn-sm" target="_blank">
+                <i class="fas fa-file-excel me-2"></i>Export Excel
+            </a>
+        </div>
+    </div>
+
+    <!-- Report Tabs -->
+    <ul class="nav nav-tabs mb-4" id="reportTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="active-tab" data-bs-toggle="tab" data-bs-target="#active" type="button"
+                role="tab">
+                Active Loans <span class="badge bg-primary ms-2">{{ active_loans.count }}</span>
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="delinquent-tab" data-bs-toggle="tab" data-bs-target="#delinquent" type="button"
+                role="tab">
+                Delinquent Accounts <span class="badge bg-danger ms-2">{{ delinquent_loans|length }}</span>
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="repayments-tab" data-bs-toggle="tab" data-bs-target="#repayments" type="button"
+                role="tab">
+                Recent Repayments
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="reportTabsContent">
+
+        <!-- Active Loans Tab -->
+        <div class="tab-pane fade show active" id="active" role="tabpanel">
+            <div class="card shadow-sm">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0 align-middle">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th class="ps-4">Loan ID</th>
+                                    <th>Client</th>
+                                    <th>Start Date</th>
+                                    <th>Term</th>
+                                    <th class="text-end">Original Amount</th>
+                                    <th class="text-end pe-4">Remaining Balance</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for loan in active_loans %}
+                                <tr>
+                                    <td class="ps-4 fw-bold">#{{ loan.loan_id }}</td>
+                                    <td>
+                                        <div class="fw-bold">{{ loan.application.client.first_name }} {{
+                                            loan.application.client.last_name }}</div>
+                                        <div class="small text-muted">{{ loan.application.client.user.email }}</div>
+                                    </td>
+                                    <td>{{ loan.start_date|date:"M d, Y" }}</td>
+                                    <td>{{ loan.term_months }} months</td>
+                                    <td class="text-end">₱{{ loan.loan_amount|intcomma }}</td>
+                                    <td class="text-end pe-4 fw-bold text-primary">₱{{ loan.remaining_balance|intcomma
+                                        }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center py-4 text-muted">No active loans found.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Delinquent Accounts Tab -->
+        <div class="tab-pane fade" id="delinquent" role="tabpanel">
+            <div class="card shadow-sm border-danger">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0 align-middle">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th class="ps-4">Loan ID</th>
+                                    <th>Client</th>
+                                    <th>Days Overdue</th>
+                                    <th>Installments</th>
+                                    <th class="text-end pe-4">Total Overdue</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in delinquent_loans %}
+                                <tr>
+                                    <td class="ps-4 fw-bold">#{{ item.loan.loan_id }}</td>
+                                    <td>
+                                        <div class="fw-bold">{{ item.loan.application.client.first_name }} {{
+                                            item.loan.application.client.last_name }}</div>
+                                        <div class="small text-muted">{{ item.loan.application.client.user.email }}
+                                        </div>
+                                    </td>
+                                    <td><span class="badge bg-danger">{{ item.days_overdue }} days</span></td>
+                                    <td>{{ item.installments_overdue }}</td>
+                                    <td class="text-end pe-4 fw-bold text-danger">₱{{ item.total_overdue|intcomma }}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center py-4 text-muted">
+                                        <i class="fas fa-check-circle text-success fa-2x mb-2 d-block"></i>
+                                        No delinquent accounts found.
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Repayments Tab -->
+        <div class="tab-pane fade" id="repayments" role="tabpanel">
+            <div class="card shadow-sm">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0 align-middle">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th class="ps-4">Date</th>
+                                    <th>Client</th>
+                                    <th>Loan ID</th>
+                                    <th>Description</th>
+                                    <th class="text-end pe-4">Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for trans in recent_repayments %}
+                                <tr>
+                                    <td class="ps-4">{{ trans.transaction_date|date:"M d, Y H:i" }}</td>
+                                    <td>{{ trans.account.client.first_name }} {{ trans.account.client.last_name }}</td>
+                                    <td>
+                                        {% if trans.loan %}
+                                        <span class="badge bg-secondary">#{{ trans.loan.loan_id }}</span>
+                                        {% else %}
+                                        -
+                                        {% endif %}
+                                    </td>
+                                    <td class="small text-muted">{{ trans.description }}</td>
+                                    <td class="text-end pe-4 text-success fw-bold">+₱{{ trans.amount|intcomma }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center py-4 text-muted">No recent repayments found.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

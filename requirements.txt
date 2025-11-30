@@ -8,3 +8,5 @@ django-widget-tweaks
 mysqlclient
 pymysql
 reportlab
+django-crontab
+openpyxl

@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'loans',
     'notifications',
     'audit',
+    'ledger',
     
     # Third party apps
     'django.contrib.sites',
@@ -56,6 +57,18 @@ INSTALLED_APPS = [
     'allauth.socialaccount',
     'widget_tweaks',
     'django.contrib.humanize',
+    'django_crontab',
+]
+
+# Cron Job Configuration
+CRONJOBS = [
+    # Daily interest computation at 11:59 PM
+    ('59 23 * * *', 'django.core.management.call_command', ['compute_interest']),
+    # Monthly interest capitalization on the 1st of each month at midnight
+    # Monthly interest capitalization on the 1st of each month at midnight
+    ('0 0 1 * *', 'django.core.management.call_command', ['compute_interest', '--capitalize']),
+    # Daily due date reminders at 9:00 AM
+    ('0 9 * * *', 'django.core.management.call_command', ['send_due_date_reminders']),
 ]
 
 SITE_ID = 1
@@ -94,6 +107,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'allauth.account.middleware.AccountMiddleware',
+    'audit.middleware.AuditLoggingMiddleware',  # Audit logging
 ]
 
 ROOT_URLCONF = 'kayamanan.urls'
