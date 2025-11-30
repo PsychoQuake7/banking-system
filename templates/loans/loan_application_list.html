@@ -24,10 +24,10 @@
                 <label for="status" class="form-label">Status</label>
                 <select class="form-select" id="status" name="status">
                     <option value="">All Status</option>
-                    <option value="pending" {% if request.GET.status=='pending' %}selected{% endif %}>Pending</option>
-                    <option value="approved" {% if request.GET.status=='approved' %}selected{% endif %}>Approved
+                    <option value="pending" {% if request.GET.status == 'pending' %}selected{% endif %}>Pending</option>
+                    <option value="approved" {% if request.GET.status == 'approved' %}selected{% endif %}>Approved
                     </option>
-                    <option value="rejected" {% if request.GET.status=='rejected' %}selected{% endif %}>Rejected
+                    <option value="rejected" {% if request.GET.status == 'rejected' %}selected{% endif %}>Rejected
                     </option>
                 </select>
             </div>
@@ -36,8 +36,7 @@
                 <select class="form-select" id="officer" name="officer">
                     <option value="">All Officers</option>
                     {% for officer in loan_officers %}
-                    <option value="{{ officer.user_id }}" {% if request.GET.officer==officer.user_id|stringformat:"i"
-                        %}selected{% endif %}>
+                    <option value="{{ officer.user_id }}" {% if request.GET.officer == officer.user_id|slugify%}selected{% endif %}>
                         {{ officer.username }}
                     </option>
                     {% endfor %}
@@ -96,7 +95,7 @@
                         <td>
                             <div class="progress" style="height: 20px;">
                                 <div class="progress-bar {% if application.eligibility_score >= 70 %}bg-success{% elif application.eligibility_score >= 50 %}bg-warning{% else %}bg-danger{% endif %}"
-                                    style="width: {{ application.eligibility_score|default:0 }}%">
+                                    style="width: {{ application.eligibility_score|default:0 }}%;">
                                     {{ application.eligibility_score|default:0 }}%
                                 </div>
                             </div>
