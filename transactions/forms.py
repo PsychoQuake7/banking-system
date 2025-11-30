@@ -46,5 +46,18 @@ class TransferForm(forms.Form):
     def __init__(self, *args, **kwargs):
         user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
-        if user and hasattr(user, 'client'):
-            self.fields['source_account'].queryset = user.client.accounts.all()
+        
+        from accounts.models import Account
+        
+        if user:
+            if hasattr(user, 'client'):
+                # Borrower - show only their accounts
+                self.fields['source_account'].queryset = user.client.accounts.all()
+            elif user.role in ['admin', 'staff']:
+                # Staff/Admin - show all accounts
+                self.fields['source_account'].queryset = Account.objects.all()
+            else:
+                # Fallback - no accounts
+                self.fields['source_account'].queryset = Account.objects.none()
+        else:
+            self.fields['source_account'].queryset = Account.objects.none()
