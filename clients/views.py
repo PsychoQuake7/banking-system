@@ -7,6 +7,37 @@ from users.decorators import staff_required, admin_required
 # @staff_required
 def client_list_view(request):
     clients = Client.objects.all().order_by('-created_at')
+    
+    # Search filter
+    search_query = request.GET.get('search')
+    if search_query:
+        from django.db.models import Q
+        clients = clients.filter(
+            Q(first_name__icontains=search_query) |
+            Q(last_name__icontains=search_query) |
+            Q(user__email__icontains=search_query)
+        )
+    
+    # Status filter
+    status = request.GET.get('status')
+    if status:
+        if status == 'active':
+            clients = clients.filter(user__is_active=True)
+        elif status == 'inactive':
+            clients = clients.filter(user__is_active=False)
+            
+    # Credit score filter
+    credit_score = request.GET.get('credit_score')
+    if credit_score:
+        if credit_score == 'excellent':
+            clients = clients.filter(credit_score__gte=800)
+        elif credit_score == 'good':
+            clients = clients.filter(credit_score__range=(700, 799))
+        elif credit_score == 'fair':
+            clients = clients.filter(credit_score__range=(600, 699))
+        elif credit_score == 'poor':
+            clients = clients.filter(credit_score__lt=600)
+
     context = {
         'clients': clients,
     }

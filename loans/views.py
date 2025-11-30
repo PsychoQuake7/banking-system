@@ -27,6 +27,25 @@ def loan_list_view(request):
         applications = LoanApplication.objects.none()
         active_loans = Loan.objects.none()
     
+    # Apply filters
+    status = request.GET.get('status')
+    if status:
+        applications = applications.filter(status=status)
+        active_loans = active_loans.filter(status=status)
+
+    if request.user.role in ['admin', 'staff']:
+        client_search = request.GET.get('client')
+        if client_search:
+            from django.db.models import Q
+            applications = applications.filter(
+                Q(client__first_name__icontains=client_search) |
+                Q(client__last_name__icontains=client_search)
+            )
+            active_loans = active_loans.filter(
+                Q(application__client__first_name__icontains=client_search) |
+                Q(application__client__last_name__icontains=client_search)
+            )
+
     # Update status for active loans
     for loan in active_loans:
         loan.update_schedule_status()
