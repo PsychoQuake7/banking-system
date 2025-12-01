@@ -1,5 +1,5 @@
 from django import forms
-from allauth.account.forms import SignupForm
+from allauth.account.forms import SignupForm, LoginForm
 from datetime import date
 from dateutil.relativedelta import relativedelta
 
@@ -167,6 +167,16 @@ class CustomSignupForm(SignupForm):
         if 'id_document' in self.cleaned_data and self.cleaned_data['id_document']:
             request.session['has_id_document'] = True
         
+
+
+class CustomLoginForm(LoginForm):
+    """
+    Custom login form to change the label of the login field.
+    """
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['login'].label = 'Username'
+
 
 from django.contrib.auth.forms import UserCreationForm
 from .models import CustomUser

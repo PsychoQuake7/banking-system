@@ -59,9 +59,36 @@ def client_detail_view(request, id):
     }
     return render(request, 'clients/client_detail.html', context)
 
-@staff_required
+@admin_required
 def client_edit_view(request, id):
     client = get_object_or_404(Client, client_id=id)
+    
+    if request.method == 'POST':
+        # Update Client fields
+        client.first_name = request.POST.get('first_name')
+        client.last_name = request.POST.get('last_name')
+        client.date_of_birth = request.POST.get('date_of_birth')
+        client.address = request.POST.get('address')
+        client.monthly_income = request.POST.get('monthly_income')
+        client.credit_score = request.POST.get('credit_score')
+        
+        if 'id_document' in request.FILES:
+            client.id_document = request.FILES['id_document']
+            
+        client.save()
+        
+        # Update User fields
+        user = client.user
+        user.email = request.POST.get('email')
+        user.phone = request.POST.get('phone')
+        
+        # Handle checkbox for is_active
+        user.is_active = request.POST.get('is_active') == 'on'
+        user.save()
+        
+        messages.success(request, f'Client {client.first_name} {client.last_name} updated successfully.')
+        return redirect('clients:client_detail', id=client.client_id)
+
     context = {
         'client': client,
     }

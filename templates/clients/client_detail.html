@@ -159,9 +159,16 @@
             </div>
             <div class="card-body">
                 <div class="d-grid gap-2">
+                    {% if user.role == 'admin' %}
                     <a href="{% url 'clients:client_edit' client.client_id %}" class="btn btn-outline-primary">
                         <i class="fas fa-edit me-2"></i>Edit Client
                     </a>
+                    {% else %}
+                    <button class="btn btn-outline-secondary" disabled>
+                        <i class="fas fa-edit me-2"></i>Edit Client <span class="badge bg-warning text-dark ms-2">Admin
+                            Only</span>
+                    </button>
+                    {% endif %}
                     <a href="{% url 'accounts:account_create' %}?client={{ client.client_id }}"
                         class="btn btn-outline-success">
                         <i class="fas fa-plus me-2"></i>Open New Account

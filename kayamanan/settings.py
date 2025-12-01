@@ -92,6 +92,7 @@ ACCOUNT_EMAIL_VERIFICATION = 'optional'  # Email verification is optional
 # Custom allauth form and adapter
 ACCOUNT_FORMS = {
     'signup': 'users.forms.CustomSignupForm',
+    'login': 'users.forms.CustomLoginForm',
 }
 ACCOUNT_ADAPTER = 'users.adapters.CustomAccountAdapter'
 
