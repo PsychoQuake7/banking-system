@@ -20,6 +20,12 @@ class CustomUser(AbstractUser):
         default='borrower',
         help_text='User role for access control'
     )
+    phone = models.CharField(
+        max_length=20,
+        blank=True,
+        null=True,
+        help_text='Optional phone number for contact'
+    )
     
     objects = CustomUserManager()
     

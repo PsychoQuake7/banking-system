@@ -184,9 +184,8 @@
             </div>
             <div class="card-body">
                 <div class="progress mb-2" style="height: 25px;">
-                    {% widthratio client.credit_score|default:0 1000 100 as score_percent %}
                     <div class="progress-bar {% if client.credit_score >= 700 %}bg-success{% elif client.credit_score >= 600 %}bg-warning{% else %}bg-danger{% endif %}"
-                        style="width: {{ score_percent }}%">
+                        style="width: {% widthratio client.credit_score|default:0 1000 100 %}%">
                         {{ client.credit_score }}/1000
                     </div>
                 </div>

@@ -167,5 +167,20 @@ class CustomSignupForm(SignupForm):
         if 'id_document' in self.cleaned_data and self.cleaned_data['id_document']:
             request.session['has_id_document'] = True
         
-        # Call parent save method to create the user
-        return super().save(request)
+
+from django.contrib.auth.forms import UserCreationForm
+from .models import CustomUser
+
+class AdminUserCreationForm(UserCreationForm):
+    """
+    Form for admins to create new users with specific roles.
+    """
+    class Meta:
+        model = CustomUser
+        fields = ('username', 'email', 'role', 'first_name', 'last_name')
+        
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        if commit:
+            user.save()
+        return user
