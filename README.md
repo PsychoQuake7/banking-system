@@ -80,11 +80,15 @@ A collaborative Django-based banking system with modules for accounts, ledger, l
 
    ```bash
      python -m venv .venv
-   ```bash
+   
+
 
 # Windows
+   ```bash
 .\.venv\Scripts\activate
+
 # macOS / Linux
+   ```bash
 source .venv/bin/activate
 
 
@@ -93,8 +97,9 @@ source .venv/bin/activate
 pip install -r requirements.txt
 
 
-4. Apply database migrations
 
+4. Apply database migrations
+   ```bash
 python manage.py makemigrations
 python manage.py migrate
 
