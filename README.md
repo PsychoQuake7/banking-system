@@ -22,9 +22,7 @@ A collaborative Django-based banking system with modules for accounts, ledger, l
 
 ```bash
 ├── accounts/# user & profilemodels, auth logic
-
 ├── audit/# auditing / change logs 
-
 ├── clients/# client/customer models & views
 
 ├── docs/# documentation 
