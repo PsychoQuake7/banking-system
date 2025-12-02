@@ -1,4 +1,4 @@
-Here’s a clean, ready-to-copy README.md for your banking system repo — you can paste this directly into your repository root (replace existing README if you want).
+
 
 # Banking System (Django)
 
