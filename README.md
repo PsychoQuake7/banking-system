@@ -111,7 +111,7 @@ python create_browser_test_users.py
 7. Run the development server
 
 python manage.py runserver
-# then open http://127.0.0.1:8000/ in your browser
+# THEN OPEN http://127.0.0.1:8000/ IN YOUR BROWSER
 
 
 
@@ -122,10 +122,10 @@ python manage.py runserver
 
 The project includes multiple tests under tests/. You can run:
 
-# With pytest
+# WITH pytest
 pytest -q
 
-# Or with Django’s test runner
+# OR with Django’s test runner
 python manage.py test
 
 
