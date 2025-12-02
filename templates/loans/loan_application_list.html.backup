@@ -24,10 +24,10 @@
                 <label for='status' class='form-label'>Status</label>
                 <select class='form-select' id='status' name='status'>
                     <option value=''>All Status</option>
-                    <option value='pending' {% if request.GET.status == 'pending' %}selected{% endif %}>Pending</option>
-                    <option value='approved' {% if request.GET.status == 'approved' %}selected{% endif %}>Approved
+                    <option value='pending' {% if request.GET.status=='pending' %}selected{% endif %}>Pending</option>
+                    <option value='approved' {% if request.GET.status=='approved' %}selected{% endif %}>Approved
                     </option>
-                    <option value='rejected' {% if request.GET.status == 'rejected' %}selected{% endif %}>Rejected
+                    <option value='rejected' {% if request.GET.status=='rejected' %}selected{% endif %}>Rejected
                     </option>
                 </select>
             </div>
@@ -36,7 +36,8 @@
                 <select class='form-select' id='officer' name='officer'>
                     <option value=''>All Officers</option>
                     {% for officer in loan_officers %}
-                    <option value='{{ officer.user_id }}' {% if request.GET.officer == officer.user_id|slugify %}selected{% endif %}>
+                    <option value='{{ officer.user_id }}' {% if request.GET.officer==officer.user_id|slugify
+                        %}selected{% endif %}>
                         {{ officer.username }}
                     </option>
                     {% endfor %}
@@ -54,7 +55,7 @@
             </div>
             <div class='col-12'>
                 <button type='submit' class='btn btn-primary'>Apply Filters</button>
-                <a href='{% url 'loans:loan_application_list' %}' class='btn btn-secondary'>Clear</a>
+                <a href='{% url ' loans:loan_application_list' %}' class='btn btn-secondary'>Clear</a>
             </div>
         </form>
     </div>
@@ -102,15 +103,14 @@
                         </td>
                         <td>{{ application.loan_officer.username }}</td>
                         <td>
-                            <span class='badge bg-{% if application.status == 'approved' %}success{% elif application.status == 'rejected' %}danger{% else %}warning{% endif %}'>
+                            <span class='badge bg-{% if application.status == ' approved' %}success{% elif
+                                application.status=='rejected' %}danger{% else %}warning{% endif %}'>
                                 {{ application.get_status_display }}
                             </span>
                         </td>
                         <td>
-                            {% if request.user.role == 'staff' or request.user.role == 'admin' %}
-                            <a href='{% url 'loans:loan_application_detail' application.application_id %}'
+                            <a href='{% url ' loans:loan_application_detail' application.application_id %}'
                                 class='btn btn-sm btn-outline-primary'>Review</a>
-                            {% endif %}
                         </td>
                     </tr>
                     {% empty %}

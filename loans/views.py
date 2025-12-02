@@ -7,7 +7,7 @@ from django.utils import timezone
 from django.core.files import File
 from clients.models import Client
 from .models import Loan, LoanApplication, AmortizationSchedule
-from users.decorators import staff_required, require_role
+from users.decorators import staff_required, require_role, borrower_or_staff_required
 from decimal import Decimal
 from datetime import date, timedelta
 from dateutil.relativedelta import relativedelta
@@ -153,12 +153,31 @@ def loan_eligibility_check_view(request):
     }
     return render(request, 'loans/loan_eligibility.html', context)
 
-@staff_required
+@borrower_or_staff_required
 def loan_application_list_view(request):
-    """View for staff/admin to review all loan applications"""
-    applications = LoanApplication.objects.all().order_by('-application_date')
+    """View for users to review loan applications (staff see all, borrowers see their own)"""
+    if request.user.role in ['admin', 'staff']:
+        # Staff and admin can see all applications
+        applications = LoanApplication.objects.all().order_by('-application_date')
+    elif hasattr(request.user, 'client'):
+        # Borrowers see only their own applications
+        applications = LoanApplication.objects.filter(client=request.user.client).order_by('-application_date')
+    else:
+        # User has no client profile
+        applications = LoanApplication.objects.none()
+    
+    # Calculate stats for the cards
+    pending_count = applications.filter(status='pending').count()
+    approved_count = applications.filter(status='approved').count()
+    rejected_count = applications.filter(status='rejected').count()
+    total_count = applications.count()
+    
     context = {
         'applications': applications,
+        'pending_count': pending_count,
+        'approved_count': approved_count,
+        'rejected_count': rejected_count,
+        'total_count': total_count,
     }
     return render(request, 'loans/loan_application_list.html', context)
 
@@ -274,10 +293,15 @@ def amortization_schedule_view(request, id):
     }
     return render(request, 'loans/amortization_schedule.html', context)
 
-@staff_required
+@borrower_or_staff_required
 def loan_application_detail_view(request, id):
-    """Detailed view of a loan application for staff review."""
+    """Detailed view of a loan application (staff can see all, borrowers see their own)"""
     application = get_object_or_404(LoanApplication, application_id=id)
+    
+    # Check permission for borrowers
+    if request.user.role == 'borrower':
+        if not hasattr(request.user, 'client') or application.client != request.user.client:
+            raise PermissionDenied("You don't have permission to view this application.")
     
     # Calculate eligibility data
     from loans.utils import calculate_eligibility_score, get_improvement_suggestions

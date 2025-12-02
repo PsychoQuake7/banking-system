@@ -54,7 +54,7 @@
             </div>
             <div class='col-12'>
                 <button type='submit' class='btn btn-primary'>Apply Filters</button>
-                <a href='{% url 'loans:loan_application_list' %}' class='btn btn-secondary'>Clear</a>
+                <a href='{% url ' loans:loan_application_list' %}' class='btn btn-secondary'>Clear</a>
             </div>
         </form>
     </div>
@@ -102,15 +102,14 @@
                         </td>
                         <td>{{ application.loan_officer.username }}</td>
                         <td>
-                            <span class='badge bg-{% if application.status == 'approved' %}success{% elif application.status == 'rejected' %}danger{% else %}warning{% endif %}'>
+                            <span class='badge bg-{% if application.status == ' approved' %}success{% elif
+                                application.status == 'rejected' %}danger{% else %}warning{% endif %}'>
                                 {{ application.get_status_display }}
                             </span>
                         </td>
                         <td>
-                            {% if request.user.role == 'staff' or request.user.role == 'admin' %}
-                            <a href='{% url 'loans:loan_application_detail' application.application_id %}'
+                            <a href='{% url ' loans:loan_application_detail' application.application_id %}'
                                 class='btn btn-sm btn-outline-primary'>Review</a>
-                            {% endif %}
                         </td>
                     </tr>
                     {% empty %}
