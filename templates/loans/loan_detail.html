@@ -22,11 +22,21 @@
                         </p>
                     </div>
                     <div class="col-md-6">
-                        <p><strong>Remaining Balance:</strong><br>
+                        <p class="mb-1"><strong>Remaining Balance:</strong><br>
                             <span
                                 class="h4 text-{% if loan.remaining_balance > 0 %}warning{% else %}success{% endif %}">
                                 ₱{{ loan.remaining_balance }}
                             </span>
+                        </p>
+                        <p class="mb-0">
+                            <strong>Disbursement Status:</strong>
+                            {% if loan.is_disbursed %}
+                            <span class="badge bg-success ms-1">
+                                Disbursed on {{ loan.disbursement_date|date:"M d, Y" }}
+                            </span>
+                            {% else %}
+                            <span class="badge bg-secondary ms-1">Not yet disbursed</span>
+                            {% endif %}
                         </p>
                     </div>
                 </div>
@@ -117,7 +127,7 @@
             <div class="card-body">
                 <div class="d-grid gap-2">
                     {% if loan.agreement_document %}
-                    <a href="{% url 'download_loan_agreement' loan.loan_id %}"
+                    <a href="{% url 'loans:download_loan_agreement' loan.loan_id %}"
                         class="btn btn-outline-primary w-100 mb-2">
                         <i class="fas fa-file-pdf"></i> Download Agreement
                     </a>
@@ -125,14 +135,14 @@
 
                     {% if user.role == 'admin' or user.role == 'staff' %}
                     {% if not loan.is_disbursed %}
-                    <a href="{% url 'disburse_loan' loan.loan_id %}" class="btn btn-success w-100 mb-2">
+                    <a href="{% url 'loans:disburse_loan' loan.loan_id %}" class="btn btn-success w-100 mb-2">
                         <i class="fas fa-money-bill-wave"></i> Disburse Funds
                     </a>
                     {% endif %}
                     {% endif %}
 
                     {% if loan.status == 'active' %}
-                    <a href="{% url 'make_payment' loan.loan_id %}" class="btn btn-primary w-100">
+                    <a href="{% url 'loans:make_payment' loan.loan_id %}" class="btn btn-primary w-100">
                         <i class="fas fa-credit-card"></i> Make Payment
                     </a>
                     {% endif %}
@@ -153,7 +163,7 @@
             </div>
             <div class="card-body">
                 <p><strong>Total Paid:</strong><br>
-                    <span class="h5 text-success">₱{{ total_paid|default:0 }}</span>
+                    <span class="h5 text-success">₱{{ total_paid|floatformat:2 }}</span>
                 </p>
 
                 <p><strong>Remaining Payments:</strong><br>
@@ -161,14 +171,22 @@
                 </p>
 
                 <p><strong>Next Payment Due:</strong><br>
+                    {% if next_payment_date %}
                     <span class="h6">{{ next_payment_date|date:"M d, Y" }}</span>
+                    {% else %}
+                    <span class="text-muted">N/A</span>
+                    {% endif %}
                 </p>
 
                 <p><strong>Days Until Due:</strong><br>
+                    {% if days_until_due is not None %}
                     <span
-                        class="h6 {% if days_until_due < 7 %}text-danger{% elif days_until_due < 14 %}text-warning{% else %}text-success{% endif %}">
+                        class="h6 {% if days_until_due < 0 %}text-danger{% elif days_until_due < 7 %}text-warning{% else %}text-success{% endif %}">
                         {{ days_until_due }} days
                     </span>
+                    {% else %}
+                    <span class="text-muted">N/A</span>
+                    {% endif %}
                 </p>
             </div>
         </div>
@@ -187,6 +205,49 @@
                 <small class="text-muted">
                     {{ paid_months }} of {{ loan.term_months }} months completed
                 </small>
+            </div>
+        </div>
+
+        <!-- Payment History -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-receipt me-2"></i>Payment History</h5>
+            </div>
+            <div class="card-body p-0">
+                {% if payment_history %}
+                <div class="table-responsive">
+                    <table class="table table-striped mb-0">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Account</th>
+                                <th>Description</th>
+                                <th class="text-end">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for tx in payment_history %}
+                            <tr>
+                                <td>
+                                    <small>{{ tx.transaction_date|date:"M d, Y" }}</small><br>
+                                    <small class="text-muted">{{ tx.transaction_date|date:"H:i" }}</small>
+                                </td>
+                                <td>
+                                    <strong>{{ tx.account.account_number }}</strong><br>
+                                    <small class="text-muted">{{ tx.account.get_account_type_display }}</small>
+                                </td>
+                                <td>{{ tx.description|default:"Loan payment" }}</td>
+                                <td class="text-end text-success">₱{{ tx.amount }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="p-3">
+                    <p class="mb-0 text-muted">No payments have been recorded for this loan yet.</p>
+                </div>
+                {% endif %}
             </div>
         </div>
     </div>

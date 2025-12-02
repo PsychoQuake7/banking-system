@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load humanize %}
+{% load loan_extras %}
 
 {% block title %}Loan Application #{{ application.application_id }} - Kayamanan Bank{% endblock %}
 
@@ -133,19 +134,37 @@
                     </div>
                 </div>
                 <p class="mt-2 mb-0">
-                    <strong>Maximum Recommended Loan:</strong> ₱{{
-                    eligibility_data.max_loan_amount|floatformat:2|intcomma }}
+                    <strong>Maximum Recommended Loan:</strong>
+                    ₱{{ eligibility_data.max_loan_amount|floatformat:2|intcomma }}
                 </p>
             </div>
             <div class="col-md-6">
                 <h6>Score Breakdown</h6>
-                <ul class="list-unstyled">
-                    <li><i class="fas fa-check-circle text-success me-2"></i>Income Score: {{
-                        eligibility_data.income_score|floatformat:0 }}%</li>
-                    <li><i class="fas fa-check-circle text-success me-2"></i>Credit Score: {{
-                        eligibility_data.credit_score_rating|floatformat:0 }}%</li>
-                    <li><i class="fas fa-check-circle text-success me-2"></i>Debt-to-Income: {{
-                        eligibility_data.dti_score|floatformat:0 }}%</li>
+                <ul class="list-unstyled mb-1">
+                    <li>
+                        <i class="fas fa-check-circle text-success me-2"></i>
+                        Credit History:
+                        {{ eligibility_data.factors.credit_score.factor_points }} pts
+                        ({{ eligibility_data.factors.credit_score.weight_percentage }}% weight)
+                    </li>
+                    <li>
+                        <i class="fas fa-check-circle text-success me-2"></i>
+                        Debt-to-Income:
+                        {{ eligibility_data.factors.dti_ratio.factor_points }} pts
+                        ({{ eligibility_data.factors.dti_ratio.weight_percentage }}% weight)
+                    </li>
+                    <li>
+                        <i class="fas fa-check-circle text-success me-2"></i>
+                        Loan Burden:
+                        {{ eligibility_data.factors.loan_burden.factor_points }} pts
+                        ({{ eligibility_data.factors.loan_burden.weight_percentage }}% weight)
+                    </li>
+                    <li>
+                        <i class="fas fa-check-circle text-success me-2"></i>
+                        Savings Reserves:
+                        {{ eligibility_data.factors.savings.factor_points }} pts
+                        ({{ eligibility_data.factors.savings.weight_percentage }}% weight)
+                    </li>
                 </ul>
             </div>
         </div>

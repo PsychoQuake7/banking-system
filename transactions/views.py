@@ -5,28 +5,22 @@ from .models import Transaction
 from users.decorators import staff_required, require_role, borrower_or_staff_required
 
 # Create your views here.
-@borrower_or_staff_required
+@login_required
 def transaction_list_view(request):
-    # Base queryset
-    if request.user.role in ['admin', 'staff']:
-        # Staff/Admin see all transactions
-        transactions = Transaction.objects.all()
-        from accounts.models import Account
-        accounts = Account.objects.all()
-    elif request.user.role == 'borrower':
-        # Borrowers see only their own transactions
-        if not hasattr(request.user, 'client'):
-            # Borrower doesn't have a Client profile
-            from django.contrib import messages
-            messages.warning(request, "Your client profile is not set up. Please contact support.")
-            transactions = Transaction.objects.none()
-            accounts = []
-        else:
-            transactions = Transaction.objects.filter(account__client=request.user.client)
-            accounts = request.user.client.accounts.all()
-    else:
+    # Only borrowers can view transactions
+    if request.user.role != 'borrower':
+        raise PermissionDenied("Only borrowers can view transactions.")
+    
+    # Borrowers see only their own transactions
+    if not hasattr(request.user, 'client'):
+        # Borrower doesn't have a Client profile
+        from django.contrib import messages
+        messages.warning(request, "Your client profile is not set up. Please contact support.")
         transactions = Transaction.objects.none()
         accounts = []
+    else:
+        transactions = Transaction.objects.filter(account__client=request.user.client)
+        accounts = request.user.client.accounts.all()
 
     # Apply filters
     account_id = request.GET.get('account')
@@ -151,17 +145,19 @@ def transfer_create_view(request):
 
     return render(request, 'transactions/transfer_create.html', {'form': form})
 
-@borrower_or_staff_required
+@login_required
 def deposit_view(request):
     from accounts.models import Account
     from django.contrib import messages
     from django.shortcuts import redirect, get_object_or_404
     from decimal import Decimal
     
+    # Only borrowers can make deposits
+    if request.user.role != 'borrower':
+        raise PermissionDenied("Only borrowers can make deposits.")
+    
     # Get user's accounts
-    if request.user.role in ['admin', 'staff']:
-        accounts = Account.objects.all()
-    elif hasattr(request.user, 'client'):
+    if hasattr(request.user, 'client'):
         accounts = request.user.client.accounts.filter(is_active=True)
     else:
         messages.error(request, "You don't have any accounts.")
@@ -199,17 +195,19 @@ def deposit_view(request):
     context = {'accounts': accounts}
     return render(request, 'transactions/deposit.html', context)
 
-@borrower_or_staff_required
+@login_required
 def withdrawal_view(request):
     from accounts.models import Account
     from django.contrib import messages
     from django.shortcuts import redirect, get_object_or_404
     from decimal import Decimal
     
+    # Only borrowers can make withdrawals
+    if request.user.role != 'borrower':
+        raise PermissionDenied("Only borrowers can make withdrawals.")
+    
     # Get user's accounts
-    if request.user.role in ['admin', 'staff']:
-        accounts = Account.objects.all()
-    elif hasattr(request.user, 'client'):
+    if hasattr(request.user, 'client'):
         accounts = request.user.client.accounts.filter(is_active=True)
     else:
         messages.error(request, "You don't have any accounts.")

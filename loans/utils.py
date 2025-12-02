@@ -3,8 +3,9 @@ Loan eligibility calculation utilities.
 
 This module provides functions to calculate loan eligibility scores based on:
 - Client credit score
-- Debt-to-income ratio
+- Debt-to-income ratio (income)
 - Existing loan burden
+- Savings reserves
 
 The eligibility score is a weighted combination of these factors.
 """
@@ -162,14 +163,79 @@ def calculate_existing_loan_burden(client) -> Dict[str, any]:
     }
 
 
+def calculate_savings_factor(client) -> Dict[str, any]:
+    """
+    Calculate savings strength factor based on active savings accounts.
+    
+    Args:
+        client: Client model instance
+        
+    Returns:
+        Dictionary with:
+            - total_savings: Combined savings balance
+            - coverage_months: Months of income covered by savings
+            - factor_points: Factor points (0-100)
+    """
+    from accounts.models import Account
+    
+    savings_accounts = Account.objects.filter(
+        client=client,
+        account_type='savings',
+        is_active=True
+    )
+    
+    total_savings = savings_accounts.aggregate(
+        total=Sum('current_balance')
+    )['total'] or Decimal('0.00')
+    
+    monthly_income = client.monthly_income
+    
+    if monthly_income > 0:
+        coverage_months = float(total_savings / monthly_income) if monthly_income else 0.0
+        coverage_months = round(coverage_months, 2)
+        
+        if coverage_months >= 12:
+            factor_points = 100
+        elif coverage_months >= 6:
+            factor_points = 85
+        elif coverage_months >= 3:
+            factor_points = 65
+        elif coverage_months >= 1:
+            factor_points = 40
+        elif total_savings > 0:
+            factor_points = 20
+        else:
+            factor_points = 0
+    else:
+        coverage_months = None
+        if total_savings >= Decimal('1000000.00'):
+            factor_points = 90
+        elif total_savings >= Decimal('500000.00'):
+            factor_points = 75
+        elif total_savings >= Decimal('100000.00'):
+            factor_points = 50
+        elif total_savings > 0:
+            factor_points = 25
+        else:
+            factor_points = 0
+    
+    return {
+        'total_savings': total_savings,
+        'coverage_months': coverage_months,
+        'factor_points': factor_points,
+        'monthly_income': monthly_income
+    }
+
+
 def calculate_eligibility_score(client, requested_amount: Optional[Decimal] = None) -> Dict[str, any]:
     """
     Calculate comprehensive loan eligibility score.
     
     This is the main function that combines all factors with weights:
-    - Credit Score: 40% weight
+    - Credit Score: 35% weight
     - Debt-to-Income Ratio: 35% weight
-    - Existing Loan Burden: 25% weight
+    - Existing Loan Burden: 15% weight
+    - Savings Strength: 15% weight
     
     Args:
         client: Client model instance
@@ -188,14 +254,16 @@ def calculate_eligibility_score(client, requested_amount: Optional[Decimal] = No
     credit_factor = calculate_credit_score_factor(client.credit_score)
     dti_data = calculate_debt_to_income_ratio(client)
     loan_burden_data = calculate_existing_loan_burden(client)
+    savings_data = calculate_savings_factor(client)
     
     # Apply weights to get weighted scores
-    credit_weighted = credit_factor * 0.40
+    credit_weighted = credit_factor * 0.35
     dti_weighted = dti_data['factor_points'] * 0.35
-    burden_weighted = loan_burden_data['factor_points'] * 0.25
+    burden_weighted = loan_burden_data['factor_points'] * 0.15
+    savings_weighted = savings_data['factor_points'] * 0.15
     
     # Calculate overall eligibility score
-    eligibility_score = credit_weighted + dti_weighted + burden_weighted
+    eligibility_score = credit_weighted + dti_weighted + burden_weighted + savings_weighted
     
     # Calculate maximum loan amount
     # Base: 3 years of annual income
@@ -242,6 +310,14 @@ def calculate_eligibility_score(client, requested_amount: Optional[Decimal] = No
     if loan_burden_data['active_loan_count'] >= 3:
         warnings.append(f"Multiple active loans ({loan_burden_data['active_loan_count']}). Consider consolidating.")
     
+    low_savings = False
+    if savings_data['coverage_months'] is not None:
+        low_savings = savings_data['coverage_months'] < 1
+    else:
+        low_savings = savings_data['total_savings'] < Decimal('100000.00')
+    if low_savings:
+        warnings.append("Low savings reserves. Build additional savings to strengthen eligibility.")
+    
     # Check if requested amount exceeds maximum
     if requested_amount and requested_amount > max_loan_amount:
         warnings.append(f"Requested amount (₱{requested_amount:,.2f}) exceeds maximum eligible amount (₱{max_loan_amount:,.2f})")
@@ -256,7 +332,7 @@ def calculate_eligibility_score(client, requested_amount: Optional[Decimal] = No
                 'value': client.credit_score,
                 'factor_points': credit_factor,
                 'weighted_score': round(credit_weighted, 2),
-                'weight_percentage': 40
+                'weight_percentage': 35
             },
             'dti_ratio': {
                 'value': dti_data['dti_ratio'],
@@ -272,7 +348,15 @@ def calculate_eligibility_score(client, requested_amount: Optional[Decimal] = No
                 'balance_to_income_ratio': loan_burden_data['balance_to_income_ratio'],
                 'factor_points': loan_burden_data['factor_points'],
                 'weighted_score': round(burden_weighted, 2),
-                'weight_percentage': 25
+                'weight_percentage': 15
+            },
+            'savings': {
+                'total_savings': savings_data['total_savings'],
+                'coverage_months': savings_data['coverage_months'],
+                'monthly_income': savings_data['monthly_income'],
+                'factor_points': savings_data['factor_points'],
+                'weighted_score': round(savings_weighted, 2),
+                'weight_percentage': 15
             }
         },
         'warnings': warnings,
@@ -329,6 +413,15 @@ def get_improvement_suggestions(eligibility_result: Dict[str, any]) -> List[str]
     
     if factors['loan_burden']['balance_to_income_ratio'] > 1.5:
         suggestions.append("Work on reducing total loan balance relative to annual income")
+    
+    # Savings suggestions
+    coverage_months = factors['savings']['coverage_months']
+    if coverage_months is not None:
+        if coverage_months < 3:
+            suggestions.append("Build savings to cover at least 3 months of income")
+    else:
+        if factors['savings']['total_savings'] < Decimal('300000.00'):
+            suggestions.append("Increase savings balances to strengthen eligibility")
     
     # Income suggestions
     if factors['dti_ratio']['monthly_income'] < 30000:

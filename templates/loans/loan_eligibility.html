@@ -103,7 +103,7 @@
                             <div class="h2 fw-bold text-dark mb-2">₱{{ eligibility_data.max_loan_amount|intcomma }}
                             </div>
                             <p class="small text-muted mb-0">
-                                Based on your income, existing debts, and credit profile.
+                                Based on your income, savings, existing debts, and credit profile.
                             </p>
                         </div>
                     </div>
@@ -128,12 +128,12 @@
                 </div>
 
                 <!-- Credit Score Factor -->
-                <div class="col-md-4 mb-3">
+                <div class="col-md-3 mb-3">
                     <div class="card h-100 border-0 bg-light">
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-center mb-2">
                                 <h6 class="card-title mb-0">Credit History</h6>
-                                <span class="badge bg-secondary">40% Weight</span>
+                                <span class="badge bg-secondary">35% Weight</span>
                             </div>
                             <div class="progress mb-2" style="height: 6px;">
                                 <div class="progress-bar bg-info" role="progressbar"
@@ -148,7 +148,7 @@
                 </div>
 
                 <!-- DTI Factor -->
-                <div class="col-md-4 mb-3">
+                <div class="col-md-3 mb-3">
                     <div class="card h-100 border-0 bg-light">
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-center mb-2">
@@ -168,12 +168,12 @@
                 </div>
 
                 <!-- Loan Burden Factor -->
-                <div class="col-md-4 mb-3">
+                <div class="col-md-3 mb-3">
                     <div class="card h-100 border-0 bg-light">
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-center mb-2">
                                 <h6 class="card-title mb-0">Loan Burden</h6>
-                                <span class="badge bg-secondary">25% Weight</span>
+                                <span class="badge bg-secondary">15% Weight</span>
                             </div>
                             <div class="progress mb-2" style="height: 6px;">
                                 <div class="progress-bar bg-success" role="progressbar"
@@ -182,6 +182,34 @@
                             <div class="d-flex justify-content-between small text-muted">
                                 <span>Active Loans: {{ eligibility_data.factors.loan_burden.active_loan_count }}</span>
                                 <span>{{ eligibility_data.factors.loan_burden.factor_points }} pts</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Savings Factor -->
+                <div class="col-md-3 mb-3">
+                    <div class="card h-100 border-0 bg-light">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h6 class="card-title mb-0">Savings Reserves</h6>
+                                <span class="badge bg-secondary">15% Weight</span>
+                            </div>
+                            <div class="progress mb-2" style="height: 6px;">
+                                <div class="progress-bar bg-success" role="progressbar"
+                                    style="width: {{ eligibility_data.factors.savings.factor_points }}%"></div>
+                            </div>
+                            <div class="small text-muted">
+                                <div>Total Savings: ₱{{ eligibility_data.factors.savings.total_savings|intcomma }}</div>
+                                <div>
+                                    Coverage:
+                                    {% if eligibility_data.factors.savings.coverage_months %}
+                                        {{ eligibility_data.factors.savings.coverage_months }} months
+                                    {% else %}
+                                        N/A
+                                    {% endif %}
+                                </div>
+                                <div>Score: {{ eligibility_data.factors.savings.factor_points }} pts</div>
                             </div>
                         </div>
                     </div>

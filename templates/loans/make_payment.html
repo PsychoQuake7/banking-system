@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load humanize %}
+{% load loan_extras %}
 
 {% block title %}Make Loan Payment - Kayamanan Bank{% endblock %}
 
@@ -81,7 +82,7 @@
                             {% for account in accounts %}
                             <option value="{{ account.account_id }}">
                                 {{ account.account_number }} - {{ account.get_account_type_display }}
-                                (Balance: ₱{{ account.balance|floatformat:2|intcomma }})
+                                (Balance: ₱{{ account.current_balance|floatformat:2|intcomma }})
                             </option>
                             {% endfor %}
                         </select>

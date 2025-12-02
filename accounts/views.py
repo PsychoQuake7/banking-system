@@ -38,13 +38,17 @@ def account_detail_view(request, id):
     }
     return render(request, 'accounts/account_detail.html', context)
 
-@borrower_or_staff_required
+@login_required
 def account_create_view(request):
     from django.shortcuts import redirect
     from django.contrib import messages
     from decimal import Decimal
     import random
     import string
+    
+    # Only borrowers can create accounts
+    if request.user.role != 'borrower':
+        raise PermissionDenied("Only borrowers can create accounts.")
     
     if request.method == 'POST':
         account_type = request.POST.get('account_type')

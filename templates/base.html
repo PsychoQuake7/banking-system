@@ -47,15 +47,27 @@
                     <a class="nav-link" href="{% url 'dashboard' %}">
                         <i class="fas fa-tachometer-alt"></i> Dashboard
                     </a>
+
+                    {% if user.role == 'borrower' %}
+                    {# Borrower-specific navigation #}
                     <a class="nav-link" href="{% url 'accounts:account_list' %}">
                         <i class="fas fa-piggy-bank"></i> My Accounts
                     </a>
                     <a class="nav-link" href="{% url 'transactions:transaction_list' %}">
                         <i class="fas fa-exchange-alt"></i> Transactions
                     </a>
-                    <a class="nav-link" href="{% url 'loans:loan_application' %}">
-                        <i class="fas fa-hand-holding-usd"></i> Apply for Loan
+                    <a class="nav-link" href="{% url 'loans:loan_list' %}">
+                        <i class="fas fa-hand-holding-usd"></i> My Loans
                     </a>
+                    {% elif user.role == 'staff' or user.role == 'admin' %}
+                    {# Staff-specific navigation #}
+                    <a class="nav-link" href="{% url 'clients:client_list' %}">
+                        <i class="fas fa-users"></i> View All Clients
+                    </a>
+                    <a class="nav-link" href="{% url 'loans:loan_application_list' %}">
+                        <i class="fas fa-clipboard-list"></i> Loan Applications
+                    </a>
+                    {% endif %}
 
                     {# Admin and Staff only menu items #}
                     {% if user.role == 'admin' or user.role == 'staff' %}

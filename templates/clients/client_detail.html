@@ -169,10 +169,6 @@
                             Only</span>
                     </button>
                     {% endif %}
-                    <a href="{% url 'accounts:account_create' %}?client={{ client.client_id }}"
-                        class="btn btn-outline-success">
-                        <i class="fas fa-plus me-2"></i>Open New Account
-                    </a>
                     <a href="{% url 'loans:loan_application_list' %}?client={{ client.client_id }}"
                         class="btn btn-outline-info">
                         <i class="fas fa-hand-holding-usd me-2"></i>View Loan Applications

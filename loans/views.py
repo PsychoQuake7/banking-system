@@ -11,7 +11,10 @@ from users.decorators import staff_required, require_role, borrower_or_staff_req
 from decimal import Decimal
 from datetime import date, timedelta
 from dateutil.relativedelta import relativedelta
+from datetime import date, timedelta
+from dateutil.relativedelta import relativedelta
 import os
+from users.models import CustomUser
 
 # Create your views here.
 @login_required
@@ -60,20 +63,56 @@ def loan_list_view(request):
 def loan_detail_view(request, id):
     loan = get_object_or_404(Loan, loan_id=id)
     
-    # Check permission: Owner or Staff/Admin
-    is_owner = hasattr(request.user, 'client') and loan.client == request.user.client
+    # Check permission: Owner (via application.client) or Staff/Admin
+    is_owner = hasattr(request.user, 'client') and loan.application.client == request.user.client
     is_staff = request.user.role in ['admin', 'staff']
     
     if not (is_owner or is_staff):
         raise PermissionDenied("You do not have permission to view this loan.")
     
-    # Update schedule status
+    # Update schedule status and get full schedule
     loan.update_schedule_status()
-        
     schedule = loan.schedules.all()
+
+    # Payment summary metrics
+    from django.db.models import Sum
+    from transactions.models import Transaction
+
+    total_paid = schedule.filter(status='paid').aggregate(
+        total=Sum('total_payment')
+    )['total'] or Decimal('0.00')
+
+    paid_months = schedule.filter(status='paid').count()
+    remaining_payments = schedule.filter(status__in=['pending', 'overdue']).count()
+
+    next_payment = loan.get_next_payment_due()
+    next_payment_date = next_payment.due_date if next_payment else None
+
+    if next_payment_date:
+        days_until_due = (next_payment_date - timezone.now().date()).days
+    else:
+        days_until_due = None
+
+    if loan.term_months > 0:
+        progress_percentage = (paid_months / loan.term_months) * 100
+    else:
+        progress_percentage = 0
+    # Payment history (all payments for this loan)
+    payment_history = Transaction.objects.filter(
+        loan=loan,
+        transaction_type='payment'
+    ).order_by('-transaction_date')
+
     context = {
         'loan': loan,
         'schedule': schedule,
+        'total_paid': total_paid,
+        'paid_months': paid_months,
+        'remaining_payments': remaining_payments,
+        'next_payment_date': next_payment_date,
+        'days_until_due': days_until_due,
+        'progress_percentage': progress_percentage,
+        'payment_history': payment_history,
     }
     return render(request, 'loans/loan_detail.html', context)
 
@@ -166,6 +205,27 @@ def loan_application_list_view(request):
         # User has no client profile
         applications = LoanApplication.objects.none()
     
+    # Get loan officers for the filter dropdown
+    loan_officers = CustomUser.objects.filter(role__in=['staff', 'admin'])
+
+    # Apply filters
+    status = request.GET.get('status')
+    officer_id = request.GET.get('officer')
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+
+    if status:
+        applications = applications.filter(status=status)
+    
+    if officer_id:
+        applications = applications.filter(loan_officer__id=officer_id)
+        
+    if start_date:
+        applications = applications.filter(application_date__date__gte=start_date)
+        
+    if end_date:
+        applications = applications.filter(application_date__date__lte=end_date)
+    
     # Calculate stats for the cards
     pending_count = applications.filter(status='pending').count()
     approved_count = applications.filter(status='approved').count()
@@ -178,6 +238,7 @@ def loan_application_list_view(request):
         'approved_count': approved_count,
         'rejected_count': rejected_count,
         'total_count': total_count,
+        'loan_officers': loan_officers,
     }
     return render(request, 'loans/loan_application_list.html', context)
 

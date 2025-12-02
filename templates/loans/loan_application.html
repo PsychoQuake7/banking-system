@@ -66,17 +66,26 @@
                         <div class="card-body">
                             {% if eligibility_data %}
                             <div class="row mb-3">
-                                <div class="col-md-6">
+                                <div class="col-md-4">
                                     <p class="mb-1"><strong>Monthly Income:</strong></p>
-                                    <p class="h5">₱{{ client.monthly_income|floatformat:2 }}</p>
+                                    <p class="h6 mb-0">₱{{ client.monthly_income|floatformat:2 }}</p>
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-md-4">
                                     <p class="mb-1"><strong>Credit Score:</strong></p>
-                                    <p class="h5">
+                                    <p class="h6 mb-0">
                                         <span
                                             class="badge bg-{% if client.credit_score >= 700 %}success{% elif client.credit_score >= 600 %}warning{% else %}danger{% endif %}">
                                             {{ client.credit_score }}
                                         </span>
+                                    </p>
+                                </div>
+                                <div class="col-md-4">
+                                    <p class="mb-1"><strong>Savings:</strong></p>
+                                    <p class="h6 mb-0">
+                                        ₱{{ eligibility_data.factors.savings.total_savings|default:0|floatformat:2 }}
+                                        {% if eligibility_data.factors.savings.coverage_months %}
+                                            <br><small class="text-muted">≈ {{ eligibility_data.factors.savings.coverage_months }} months of income</small>
+                                        {% endif %}
                                     </p>
                                 </div>
                             </div>
