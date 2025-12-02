@@ -86,6 +86,7 @@ A collaborative Django-based banking system with modules for accounts, ledger, l
 
    ```bash
  .\.venv\Scripts\activate
+```bash
 
 # macOS / Linux
 
