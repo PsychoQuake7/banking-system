@@ -24,43 +24,24 @@ A collaborative Django-based banking system with modules for accounts, ledger, l
 ├── accounts/# user & profilemodels, auth logic
 ├── audit/# auditing / change logs 
 ├── clients/# client/customer models & views
-
 ├── docs/# documentation 
-
 ├── kayamanan/# domain/business logic
-
 ├── ledger/# ledger / accounting logic
- 
 ├── loans/# loan processing & interest 
-
-├── notifications/# notification senders/templates
- 
+├── notifications/# notification senders/templates 
 ├── static/
-
 │   └── css/# static assets
- 
 ├── templates/# html templates & error pages
- 
 ├── tests/# unit / integration tests 
-
 ├── transactions/# transaction engine / processing
-
 ├── users/# user management
-
 ├── utils/# helper utilities
-
 ├── manage.py 
-
 ├── requirements.txt 
-
 ├── setup_test_data.py 
-
 ├── create_admin.py 
-
 ├── create_browser_test_users.py
-
 ├── STAFF_MANUAL_TEST.md 
-
 └── README.md
 ```
 
@@ -129,7 +110,7 @@ python create_browser_test_users.py
 python manage.py runserver
 ```
 
-# THEN OPEN http://127.0.0.1:8000/ IN YOUR BROWSER
+##THEN OPEN http://127.0.0.1:8000/ IN YOUR BROWSER
 
 
 
@@ -140,7 +121,7 @@ python manage.py runserver
 
 The project includes multiple tests under tests/. You can run:
 
-# WITH PYTEST
+## WITH PYTEST
 
 ```bash
 pytest -q
