@@ -60,13 +60,7 @@
                         <i class="fas fa-hand-holding-usd"></i> My Loans
                     </a>
                     {% elif user.role == 'staff' or user.role == 'admin' %}
-                    {# Staff-specific navigation #}
-                    <a class="nav-link" href="{% url 'clients:client_list' %}">
-                        <i class="fas fa-users"></i> View All Clients
-                    </a>
-                    <a class="nav-link" href="{% url 'loans:loan_application_list' %}">
-                        <i class="fas fa-clipboard-list"></i> Loan Applications
-                    </a>
+                    {# Staff-specific navigation removed as it is in dropdown #}
                     {% endif %}
 
                     {# Admin and Staff only menu items #}

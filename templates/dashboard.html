@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load humanize %}
 
 {% block title %}Dashboard - Kayamanan Bank{% endblock %}
 
@@ -10,6 +11,7 @@
     </div>
 </div>
 
+{% if request.user.role == 'borrower' %}
 <!-- Quick Stats -->
 <div class="row mb-4">
     <div class="col-md-3">
@@ -73,10 +75,42 @@
         </div>
     </div>
 </div>
+{% elif request.user.role == 'staff' %}
+<!-- Staff Quick Actions -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card bg-primary text-white h-100">
+            <div class="card-body d-flex align-items-center justify-content-between">
+                <div>
+                    <h3 class="card-title mb-0">Manage Clients</h3>
+                    <p class="card-text">View and manage client accounts</p>
+                    <a href="{% url 'clients:client_list' %}" class="btn btn-light text-primary mt-2">Go to Clients</a>
+                </div>
+                <i class="fas fa-users fa-4x opacity-50"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card bg-success text-white h-100">
+            <div class="card-body d-flex align-items-center justify-content-between">
+                <div>
+                    <h3 class="card-title mb-0">Loan Applications</h3>
+                    <p class="card-text">Review and process loan applications</p>
+                    <a href="{% url 'loans:loan_application_list' %}" class="btn btn-light text-success mt-2">Go to
+                        Applications</a>
+                </div>
+                <i class="fas fa-file-invoice-dollar fa-4x opacity-50"></i>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
 
 <div class="row">
     <!-- Recent Transactions -->
+    <!-- Recent Transactions -->
     <div class="col-md-8">
+        {% if request.user.role == 'borrower' %}
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="card-title mb-0"><i class="fas fa-history me-2"></i>Recent Transactions</h5>
@@ -166,18 +200,19 @@
                 {% endif %}
             </div>
         </div>
+        {% endif %}
     </div>
 
     <!-- Quick Actions & Notifications -->
     <div class="col-md-4">
         <!-- Quick Actions -->
+        {% if request.user.role == 'borrower' %}
         <div class="card">
             <div class="card-header">
                 <h5 class="card-title mb-0"><i class="fas fa-bolt me-2"></i>Quick Actions</h5>
             </div>
             <div class="card-body">
                 <div class="d-grid gap-2">
-                    {% if request.user.role == 'borrower' %}
                     <a href="{% url 'accounts:account_create' %}" class="btn btn-outline-primary">
                         <i class="fas fa-plus me-2"></i>Open New Account
                     </a>
@@ -193,10 +228,10 @@
                     <a href="{% url 'transactions:transfer_create' %}" class="btn btn-outline-info">
                         <i class="fas fa-exchange-alt me-2"></i>Transfer Funds
                     </a>
-                    {% endif %}
                 </div>
             </div>
         </div>
+        {% endif %}
 
         <!-- Notifications -->
         <div class="card mt-4">
