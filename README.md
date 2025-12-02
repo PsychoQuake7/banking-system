@@ -1,135 +1,171 @@
-# Banking System
+Here’s a clean, ready-to-copy README.md for your banking system repo — you can paste this directly into your repository root (replace existing README if you want).
 
-A secure and efficient console-based banking application built with Python that simulates real-world banking operations with robust user authentication and transaction management.
+# Banking System (Django)
 
-## Features
+A collaborative Django-based banking system with modules for accounts, ledger, loans, transactions and notifications. Includes management scripts for seeding test data and creating admin/test users, plus a comprehensive test suite.
 
-### 🔐 Authentication System
-- **User Registration**: Create new bank accounts with secure credentials
-- **Login/Logout**: Secure session management
-- **Password Security**: Passwords are stored securely (not in plain text)
+---
 
-### 💰 Account Management
-- **Balance Inquiry**: Check current account balance
-- **Cash Deposits**: Add funds to your account
-- **Cash Withdrawals**: Withdraw money with balance validation
-- **Transaction History**: View complete transaction records
-- **Account Information**: Display account details
+## 🚀 Highlights / Features
 
-### 🏦 Banking Operations
-- **Fund Transfers**: Transfer money between accounts
-- **Interest Calculation**: Automated interest accrual system
-- **Account Statements**: Generate detailed transaction statements
-- **Admin Functions**: Administrative capabilities for system management
+- Role-based user management and officer/admin actions  
+- Account management: balances, deposits, withdrawals, transfers  
+- Ledger & transaction accounting (double-entry style components)  
+- Loan module: applications, interest calculation, approval flows  
+- Notifications: email/in-app notifications for transactions / reminders  
+- Management scripts: `create_admin.py`, `setup_test_data.py`, `create_browser_test_users.py`  
+- Tests: `tests/` directory contains multiple test modules (loans, transactions, reminders, staff verification, etc.)
 
-## Installation
+---
 
-### Prerequisites
-- Python 3.6 or higher
-- pip (Python package manager)
+## Repo layout (top-level)
 
-### Setup Instructions
-1. Clone the repository:
-```bash
-git clone https://github.com/PsychoQuake7/banking-system.git
-cd banking-system
+├── accounts/# user & profilemodels, auth logic    ├── audit/# auditing / change logs 
+├── clients/# client/customer models & views
+├── docs/# documentation 
+├── kayamanan/# domain/business logic
+├── ledger/# ledger / accounting logic 
+├── loans/# loan processing & interest 
+├── notifications/# notification senders/templates 
+├── static/
+│   └── css/# static assets 
+├── templates/# html templates & error pages 
+├── tests/# unit / integration tests 
+├── transactions/# transaction engine / processing ├── users/# user management
+├── utils/# helper utilities 
+├── manage.py 
+├── requirements.txt 
+├── setup_test_data.py 
+├── create_admin.py 
+├── create_browser_test_users.py 
+├── STAFF_MANUAL_TEST.md 
+└── README.md
 
-Main Menu Options
-Create Account - Register a new banking account
+---
 
-Login - Access your existing account
+## 🛠️ Local development — Getting started
 
-Exit - Close the application
+> Prereqs: Python 3.8+ (or compatible), pip, virtualenv
 
-Account Dashboard
-After logging in, you can:
+1. Clone the repository  
+   ```bash
+   git clone https://github.com/PsychoQuake7/banking-system.git
+   cd banking-system
 
-Check Balance
+2. Create & activate a virtualenv
 
-Deposit Funds
+python -m venv .venv
+# Windows
+.\.venv\Scripts\activate
+# macOS / Linux
+source .venv/bin/activate
 
-Withdraw Cash
 
-Transfer Money
+3. Install dependencies
 
-View Transaction History
+pip install -r requirements.txt
 
-View Account Information
 
-Logout
+4. Apply database migrations
 
-Project Structure
-text
-banking-system/
-├── main.py              # Main application entry point
-├── banking_system.py    # Core banking logic and classes
-├── requirements.txt     # Project dependencies
-├── .gitignore          # Git ignore rules
-└── README.md           # Project documentation
-Technical Details
-Core Components
-BankingSystem Class: Main system controller handling all operations
+python manage.py makemigrations
+python manage.py migrate
 
-Account Management: User account creation, authentication, and profile management
 
-Transaction Engine: Handles deposits, withdrawals, and transfers
+5. Create a superuser (for admin access)
 
-Data Persistence: Local data storage system
+python manage.py createsuperuser
 
-Security Features
-Secure user authentication
 
-Transaction validation and verification
+6. (Optional) Seed test data or create test users
 
-Balance checking before withdrawals and transfers
+python setup_test_data.py
+python create_admin.py
+python create_browser_test_users.py
 
-Session management
 
-Development
-Contributing
-Fork the repository
+7. Run the development server
 
-Create a feature branch (git checkout -b feature/amazing-feature)
+python manage.py runserver
+# then open http://127.0.0.1:8000/ in your browser
 
-Commit your changes (git commit -m 'Add some amazing feature')
 
-Push to the branch (git push origin feature/amazing-feature)
 
-Open a Pull Request
 
-Code Style
-Follow PEP 8 Python coding standards
+---
 
-Include docstrings for all functions and classes
+✅ Running tests
 
-Add comments for complex logic
+The project includes multiple tests under tests/. You can run:
 
-License
-This project is licensed under the MIT License - see the LICENSE file for details.
+# With pytest
+pytest -q
 
-Contact
-Developer: PsychoQuake7
-GitHub: https://github.com/PsychoQuake7
+# Or with Django’s test runner
+python manage.py test
 
-Support
-If you encounter any issues or have questions:
 
-Check the existing issues on GitHub
+---
 
-Create a new issue with detailed description
+⚙️ Useful management scripts
 
-Provide steps to reproduce any bugs
+create_admin.py — create admin accounts / bootstrap users
 
-Note: This is a educational project simulating banking operations. Not intended for real financial transactions.
+create_browser_test_users.py — create sample users for browser-based testing
 
-text
+setup_test_data.py — seed database with sample clients, accounts and transactions
 
-This README provides:
+reproduce_error.py, reproduce_issue.py — helper scripts for reproducing/debugging issues
 
-- **Clear project overview** explaining what your banking system does
-- **Comprehensive feature list** highlighting all capabilities
-- **Easy installation instructions** for new users
-- **Usage guide** with example commands
-- **Technical documentation** for developers
-- **Contribution guidelines** for open-source collaboration
-- **Professional formatting** with emojis and clear section organization
+
+Run them with the virtual environment active:
+
+python create_admin.py
+python setup_test_data.py
+
+
+---
+
+🛡 Security & best practices (notes)
+
+Use environment variables for sensitive settings (e.g. SECRET_KEY, database credentials).
+
+Pin dependencies in requirements.txt and update regularly.
+
+For production: collect static files, and run with a WSGI server (e.g. Gunicorn / uWSGI) + HTTPS via proxy (nginx, etc.).
+
+
+
+---
+
+🧩 Contributing
+
+1. Fork the repo.
+
+
+2. Create a feature branch: git checkout -b feature/your-feature.
+
+
+3. Commit your changes and submit a Pull Request.
+
+
+4. Make sure tests pass before requesting review.
+
+
+
+
+---
+
+📚 Documentation & Staff test flows
+
+See STAFF_MANUAL_TEST.md for staff workflow and test instructions.
+
+
+---
+
+📄 License
+
+This project is open-source; add a LICENSE file if desired for license terms.
+
+---
+
