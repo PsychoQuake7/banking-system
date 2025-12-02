@@ -79,52 +79,57 @@ cd banking-system
 
 2. Create & activate a virtualenv
 
-   ```bash
-     python -m venv .venv
+```bash
+python -m venv .venv
+```
 
 # Windows
 
- ```bash
-   .\.venv\Scripts\activate
-
+```bash
+.\.venv\Scripts\activate
+```
 
 # macOS / Linux
 
-   ```bash
-      source .venv/bin/activate
-
+```bash
+source .venv/bin/activate
+```
 
 3. Install dependencies
 
-   ```bash
-      pip install -r requirements.txt
+```bash
+pip install -r requirements.txt
+```
 
 4. Apply database migrations
-
-   ```bash
-      python manage.py makemigrations
-      python manage.py migrate
+```bash
+python manage.py makemigrations
+python manage.py migrate
+```
 
 
 5. Create a superuser (for admin access)
-  
-  ```bash
-     python manage.py createsuperuser
+
+```bash
+python manage.py createsuperuser
+```
 
 
 6. (Optional) Seed test data or create test users
 
-   ```bash
-     python setup_test_data.py
-     python create_admin.py
-     python create_browser_test_users.py
+```bash
+python setup_test_data.py
+python create_admin.py
+python create_browser_test_users.py
+```
 
 
 7. Run the development server
   
-   ```bash
-      python manage.py runserver
-      
+```bash
+python manage.py runserver
+```
+
 # THEN OPEN http://127.0.0.1:8000/ IN YOUR BROWSER
 
 
@@ -136,18 +141,27 @@ cd banking-system
 
 The project includes multiple tests under tests/. You can run:
 
-# WITH pytest
+# WITH PYTEST
+
+```bash
 pytest -q
+```
+
 
 # OR with Django’s test runner
+
+```bash
 python manage.py test
+```
 
 
 ---
 
 ⚙️ Useful management scripts
 
+
 create_admin.py — create admin accounts / bootstrap users
+
 
 create_browser_test_users.py — create sample users for browser-based testing
 
@@ -158,9 +172,10 @@ reproduce_error.py, reproduce_issue.py — helper scripts for reproducing/debugg
 
 Run them with the virtual environment active:
 
+```bash
 python create_admin.py
 python setup_test_data.py
-
+```
 
 ---
 
@@ -181,29 +196,16 @@ For production: collect static files, and run with a WSGI server (e.g. Gunicorn 
 1. Fork the repo.
 
 
-2. Create a feature branch: git checkout -b feature/your-feature.
+2. Create a feature branch:
 
+```bash
+ git checkout -b feature/your-feature.
+```
 
 3. Commit your changes and submit a Pull Request.
 
 
 4. Make sure tests pass before requesting review.
-
-
-
-
----
-
-📚 Documentation & Staff test flows
-
-See STAFF_MANUAL_TEST.md for staff workflow and test instructions.
-
-
----
-
-📄 License
-
-This project is open-source; add a LICENSE file if desired for license terms.
 
 ---
 
