@@ -110,7 +110,7 @@ python create_browser_test_users.py
 python manage.py runserver
 ```
 
-##THEN OPEN http://127.0.0.1:8000/ IN YOUR BROWSER
+## THEN OPEN http://127.0.0.1:8000/ IN YOUR BROWSER
 
 
 
