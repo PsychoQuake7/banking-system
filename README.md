@@ -80,44 +80,48 @@ A collaborative Django-based banking system with modules for accounts, ledger, l
 
    ```bash
      python -m venv .venv
-   
 
 
 # Windows
+
    ```bash
 .\.venv\Scripts\activate
 
 # macOS / Linux
+
    ```bash
 source .venv/bin/activate
 
 
 3. Install dependencies
+
    ```bash
 pip install -r requirements.txt
 
-
-
 4. Apply database migrations
+
    ```bash
 python manage.py makemigrations
 python manage.py migrate
 
 
 5. Create a superuser (for admin access)
-
+  
+  ```bash
 python manage.py createsuperuser
 
 
 6. (Optional) Seed test data or create test users
 
+   ```bash
 python setup_test_data.py
 python create_admin.py
 python create_browser_test_users.py
 
 
 7. Run the development server
-
+  
+   ```bash
 python manage.py runserver
 # THEN OPEN http://127.0.0.1:8000/ IN YOUR BROWSER
 
