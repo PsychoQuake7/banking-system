@@ -85,18 +85,18 @@ A collaborative Django-based banking system with modules for accounts, ledger, l
 # Windows
 
    ```bash
-.\.venv\Scripts\activate
+ .\.venv\Scripts\activate
 
 # macOS / Linux
 
    ```bash
-source .venv/bin/activate
+ source .venv/bin/activate
 
 
 3. Install dependencies
 
    ```bash
-pip install -r requirements.txt
+ pip install -r requirements.txt
 
 4. Apply database migrations
 
