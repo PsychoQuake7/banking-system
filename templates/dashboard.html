@@ -115,6 +115,57 @@
                 {% endif %}
             </div>
         </div>
+
+        <!-- Loan History -->
+        <div class="card mt-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0"><i class="fas fa-file-invoice-dollar me-2"></i>Loan History</h5>
+                <a href="{% url 'loans:loan_application_list' %}" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body">
+                {% if loan_history %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Loan ID</th>
+                                <th>Amount</th>
+                                <th>Term</th>
+                                <th>Rate</th>
+                                <th>Status</th>
+                                <th>Remaining</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for loan in loan_history %}
+                            <tr>
+                                <td><strong>#{{ loan.loan_id }}</strong></td>
+                                <td>₱{{ loan.loan_amount|floatformat:2 }}</td>
+                                <td>{{ loan.term_months }}mo</td>
+                                <td>{{ loan.interest_rate|floatformat:2 }}%</td>
+                                <td>
+                                    <span
+                                        class="badge bg-{% if loan.status == 'active' %}success{% elif loan.status == 'paid' %}info{% else %}danger{% endif %}">
+                                        {{ loan.get_status_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if loan.status == 'active' %}
+                                    <strong class="text-warning">₱{{ loan.remaining_balance|floatformat:2 }}</strong>
+                                    {% else %}
+                                    <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">No loan history found.</p>
+                {% endif %}
+            </div>
+        </div>
     </div>
 
     <!-- Quick Actions & Notifications -->
@@ -132,8 +183,14 @@
                     <a href="{% url 'loans:loan_application' %}" class="btn btn-outline-success">
                         <i class="fas fa-hand-holding-usd me-2"></i>Apply for Loan
                     </a>
-                    <a href="{% url 'transactions:transaction_create' %}" class="btn btn-outline-info">
-                        <i class="fas fa-exchange-alt me-2"></i>Make Transaction
+                    <a href="{% url 'transactions:deposit' %}" class="btn btn-outline-success">
+                        <i class="fas fa-plus-circle me-2"></i>Make Deposit
+                    </a>
+                    <a href="{% url 'transactions:withdrawal' %}" class="btn btn-outline-warning">
+                        <i class="fas fa-minus-circle me-2"></i>Make Withdrawal
+                    </a>
+                    <a href="{% url 'transactions:transfer_create' %}" class="btn btn-outline-info">
+                        <i class="fas fa-exchange-alt me-2"></i>Transfer Funds
                     </a>
                 </div>
             </div>

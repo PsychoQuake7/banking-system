@@ -24,26 +24,31 @@
                 <div class="row mb-4">
                     <div class="col-md-6">
                         <p><strong>Account Number:</strong><br>
-                        <span class="h5 text-monospace">{{ account.account_number }}</span></p>
+                            <span class="h5 text-monospace">{{ account.account_number }}</span>
+                        </p>
                     </div>
                     <div class="col-md-6">
                         <p><strong>Current Balance:</strong><br>
-                        <span class="h3 text-success">₱{{ account.current_balance }}</span></p>
+                            <span class="h3 text-success">₱{{ account.current_balance }}</span>
+                        </p>
                     </div>
                 </div>
-                
+
                 <div class="row">
                     <div class="col-md-4">
                         <p><strong>Interest Rate:</strong><br>
-                        <span class="h5">{{ account.interest_rate }}%</span></p>
+                            <span class="h5">{{ account.interest_rate }}%</span>
+                        </p>
                     </div>
                     <div class="col-md-4">
                         <p><strong>Date Opened:</strong><br>
-                        <span class="h5">{{ account.created_at|date:"F d, Y" }}</span></p>
+                            <span class="h5">{{ account.created_at|date:"F d, Y" }}</span>
+                        </p>
                     </div>
                     <div class="col-md-4">
                         <p><strong>Account Type:</strong><br>
-                        <span class="h5">{{ account.get_account_type_display }}</span></p>
+                            <span class="h5">{{ account.get_account_type_display }}</span>
+                        </p>
                     </div>
                 </div>
             </div>
@@ -73,7 +78,8 @@
                                 <td>₱{{ accrual.balance_snapshot }}</td>
                                 <td class="text-success">+₱{{ accrual.interest_earned }}</td>
                                 <td>
-                                    <span class="badge bg-{% if accrual.is_compounded %}success{% else %}secondary{% endif %}">
+                                    <span
+                                        class="badge bg-{% if accrual.is_compounded %}success{% else %}secondary{% endif %}">
                                         {{ accrual.is_compounded|yesno:"Yes,No" }}
                                     </span>
                                 </td>
@@ -97,16 +103,18 @@
             </div>
             <div class="card-body">
                 <div class="d-grid gap-2">
-                    <a href="{% url 'transactions:transaction_create' %}?account={{ account.account_id }}&type=deposit" 
-                       class="btn btn-success">
+                    {% if user.role == 'admin' or user.role == 'staff' %}
+                    <a href="{% url 'transactions:transaction_create' %}?account={{ account.account_id }}&type=deposit"
+                        class="btn btn-success">
                         <i class="fas fa-plus me-2"></i>Make Deposit
                     </a>
-                    <a href="{% url 'transactions:transaction_create' %}?account={{ account.account_id }}&type=withdrawal" 
-                       class="btn btn-warning">
+                    <a href="{% url 'transactions:transaction_create' %}?account={{ account.account_id }}&type=withdrawal"
+                        class="btn btn-warning">
                         <i class="fas fa-minus me-2"></i>Make Withdrawal
                     </a>
-                    <a href="{% url 'transactions:transfer_create' %}?from_account={{ account.account_id }}" 
-                       class="btn btn-info">
+                    {% endif %}
+                    <a href="{% url 'transactions:transfer_create' %}?from_account={{ account.account_id }}"
+                        class="btn btn-info">
                         <i class="fas fa-exchange-alt me-2"></i>Transfer Funds
                     </a>
                 </div>
@@ -120,13 +128,16 @@
             </div>
             <div class="card-body">
                 <p><strong>Total Interest Earned:</strong><br>
-                <span class="h5 text-success">₱{{ total_interest_earned|default:0 }}</span></p>
-                
+                    <span class="h5 text-success">₱{{ total_interest_earned|default:0 }}</span>
+                </p>
+
                 <p><strong>Current Rate:</strong><br>
-                <span class="h6">{{ account.interest_rate }}% per annum</span></p>
-                
+                    <span class="h6">{{ account.interest_rate }}% per annum</span>
+                </p>
+
                 <p><strong>Next Compounding:</strong><br>
-                <span class="h6">End of Month</span></p>
+                    <span class="h6">End of Month</span>
+                </p>
             </div>
         </div>
 

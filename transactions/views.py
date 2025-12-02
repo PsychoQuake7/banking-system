@@ -2,10 +2,10 @@ from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from .models import Transaction
-from users.decorators import staff_required, require_role
+from users.decorators import staff_required, require_role, borrower_or_staff_required
 
 # Create your views here.
-@login_required
+@borrower_or_staff_required
 def transaction_list_view(request):
     # Base queryset
     if request.user.role in ['admin', 'staff']:
@@ -13,10 +13,17 @@ def transaction_list_view(request):
         transactions = Transaction.objects.all()
         from accounts.models import Account
         accounts = Account.objects.all()
-    elif hasattr(request.user, 'client'):
+    elif request.user.role == 'borrower':
         # Borrowers see only their own transactions
-        transactions = Transaction.objects.filter(account__client=request.user.client)
-        accounts = request.user.client.accounts.all()
+        if not hasattr(request.user, 'client'):
+            # Borrower doesn't have a Client profile
+            from django.contrib import messages
+            messages.warning(request, "Your client profile is not set up. Please contact support.")
+            transactions = Transaction.objects.none()
+            accounts = []
+        else:
+            transactions = Transaction.objects.filter(account__client=request.user.client)
+            accounts = request.user.client.accounts.all()
     else:
         transactions = Transaction.objects.none()
         accounts = []
@@ -25,7 +32,7 @@ def transaction_list_view(request):
     account_id = request.GET.get('account')
     if account_id:
         # If borrower, ensure the account belongs to them
-        if request.user.role == 'borrower':
+        if request.user.role == 'borrower' and hasattr(request.user, 'client'):
             if not accounts.filter(account_id=account_id).exists():
                 raise PermissionDenied("You do not have permission to view transactions for this account.")
         transactions = transactions.filter(account_id=account_id)
@@ -143,3 +150,101 @@ def transfer_create_view(request):
         form = TransferForm(user=request.user)
 
     return render(request, 'transactions/transfer_create.html', {'form': form})
+
+@borrower_or_staff_required
+def deposit_view(request):
+    from accounts.models import Account
+    from django.contrib import messages
+    from django.shortcuts import redirect, get_object_or_404
+    from decimal import Decimal
+    
+    # Get user's accounts
+    if request.user.role in ['admin', 'staff']:
+        accounts = Account.objects.all()
+    elif hasattr(request.user, 'client'):
+        accounts = request.user.client.accounts.filter(is_active=True)
+    else:
+        messages.error(request, "You don't have any accounts.")
+        return redirect('dashboard')
+    
+    if request.method == 'POST':
+        account_id = request.POST.get('account')
+        amount = request.POST.get('amount')
+        description = request.POST.get('description', '')
+        
+        try:
+            amount = Decimal(amount)
+            if amount <= 0:
+                messages.error(request, "Amount must be greater than zero.")
+                return render(request, 'transactions/deposit.html', {'accounts': accounts})
+            
+            account = get_object_or_404(Account, account_id=account_id)
+            
+            # Check permission
+            if request.user.role == 'borrower':
+                if not hasattr(request.user, 'client') or account.client != request.user.client:
+                    raise PermissionDenied("You don't have permission to deposit to this account.")
+            
+            # Make deposit
+            transaction = account.deposit(amount, description or f"Deposit of ₱{amount}")
+            
+            messages.success(request, f"Successfully deposited ₱{amount} to account {account.account_number}. New balance: ₱{account.current_balance}")
+            return redirect('accounts:account_detail', id=account.account_id)
+            
+        except (ValueError, TypeError):
+            messages.error(request, "Invalid amount.")
+        except Exception as e:
+            messages.error(request, f"Error: {str(e)}")
+    
+    context = {'accounts': accounts}
+    return render(request, 'transactions/deposit.html', context)
+
+@borrower_or_staff_required
+def withdrawal_view(request):
+    from accounts.models import Account
+    from django.contrib import messages
+    from django.shortcuts import redirect, get_object_or_404
+    from decimal import Decimal
+    
+    # Get user's accounts
+    if request.user.role in ['admin', 'staff']:
+        accounts = Account.objects.all()
+    elif hasattr(request.user, 'client'):
+        accounts = request.user.client.accounts.filter(is_active=True)
+    else:
+        messages.error(request, "You don't have any accounts.")
+        return redirect('dashboard')
+    
+    if request.method == 'POST':
+        account_id = request.POST.get('account')
+        amount = request.POST.get('amount')
+        description = request.POST.get('description', '')
+        
+        try:
+            amount = Decimal(amount)
+            if amount <= 0:
+                messages.error(request, "Amount must be greater than zero.")
+                return render(request, 'transactions/withdrawal.html', {'accounts': accounts})
+            
+            account = get_object_or_404(Account, account_id=account_id)
+            
+            # Check permission
+            if request.user.role == 'borrower':
+                if not hasattr(request.user, 'client') or account.client != request.user.client:
+                    raise PermissionDenied("You don't have permission to withdraw from this account.")
+            
+            # Make withdrawal
+            transaction = account.withdraw(amount, description or f"Withdrawal of ₱{amount}")
+            
+            messages.success(request, f"Successfully withdrew ₱{amount} from account {account.account_number}. New balance: ₱{account.current_balance}")
+            return redirect('accounts:account_detail', id=account.account_id)
+            
+        except ValueError as e:
+            messages.error(request, str(e))
+        except (TypeError,) as e:
+            messages.error(request, "Invalid amount.")
+        except Exception as e:
+            messages.error(request, f"Error: {str(e)}")
+    
+    context = {'accounts': accounts}
+    return render(request, 'transactions/withdrawal.html', context)

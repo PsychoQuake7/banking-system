@@ -33,15 +33,25 @@ class CustomSignupForm(SignupForm):
         help_text='Your legal last name'
     )
     
-    date_of_birth = forms.DateField(
+    dob_year = forms.ChoiceField(
+        choices=[('', 'Year')] + [(str(y), str(y)) for y in range(date.today().year, 1900, -1)],
         required=True,
-        widget=forms.DateInput(attrs={
-            'class': 'form-control',
-            'type': 'date',
-            'max': date.today().isoformat()
-        }),
-        label='Date of Birth',
-        help_text='You must be at least 18 years old to register'
+        widget=forms.Select(attrs={'class': 'form-select'}),
+        label='Year'
+    )
+    
+    dob_month = forms.ChoiceField(
+        choices=[('', 'Month')] + [(str(m), date(2000, m, 1).strftime('%B')) for m in range(1, 13)],
+        required=True,
+        widget=forms.Select(attrs={'class': 'form-select'}),
+        label='Month'
+    )
+    
+    dob_day = forms.ChoiceField(
+        choices=[('', 'Day')] + [(str(d), str(d)) for d in range(1, 32)],
+        required=True,
+        widget=forms.Select(attrs={'class': 'form-select'}),
+        label='Day'
     )
     
     address = forms.CharField(
@@ -91,22 +101,32 @@ class CustomSignupForm(SignupForm):
         help_text='Optional: Upload a valid government-issued ID (image or PDF)'
     )
     
-    def clean_date_of_birth(self):
+    def clean(self):
         """
-        Validate that the user is at least 18 years old.
+        Combine year, month, day into date_of_birth and validate age.
         """
-        dob = self.cleaned_data.get('date_of_birth')
-        if dob:
-            today = date.today()
-            age = relativedelta(today, dob).years
-            
-            if age < 18:
-                raise forms.ValidationError(
-                    'You must be at least 18 years old to register. '
-                    f'You are currently {age} years old.'
-                )
+        cleaned_data = super().clean()
+        year = cleaned_data.get('dob_year')
+        month = cleaned_data.get('dob_month')
+        day = cleaned_data.get('dob_day')
         
-        return dob
+        if year and month and day:
+            try:
+                dob = date(int(year), int(month), int(day))
+                cleaned_data['date_of_birth'] = dob
+                
+                today = date.today()
+                age = relativedelta(today, dob).years
+                
+                if age < 18:
+                    raise forms.ValidationError(
+                        'You must be at least 18 years old to register. '
+                        f'You are currently {age} years old.'
+                    )
+            except ValueError:
+                raise forms.ValidationError('Invalid date of birth.')
+        
+        return cleaned_data
     
     def clean_address(self):
         """
@@ -167,6 +187,8 @@ class CustomSignupForm(SignupForm):
         if 'id_document' in self.cleaned_data and self.cleaned_data['id_document']:
             request.session['has_id_document'] = True
         
+        # Call parent's save method to create the user
+        return super().save(request)
 
 
 class CustomLoginForm(LoginForm):

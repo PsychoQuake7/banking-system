@@ -59,6 +59,12 @@ def dashboard_view(request):
         ).select_related('loan').order_by('due_date')[:5]
         context['upcoming_payments'] = upcoming_payments
         
+        # Get loan history (all loans for this client)
+        loan_history = Loan.objects.filter(
+            application__client=client
+        ).select_related('application').order_by('-start_date')
+        context['loan_history'] = loan_history
+        
         # Placeholder for notifications (you can implement a Notification model later)
         # For now, we'll create dynamic notifications based on loan status
         notifications = []
