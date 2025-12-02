@@ -49,12 +49,19 @@ A collaborative Django-based banking system with modules for accounts, ledger, l
 ├── users/# user management
 
 ├── utils/# helper utilities
+
 ├── manage.py 
+
 ├── requirements.txt 
+
 ├── setup_test_data.py 
+
 ├── create_admin.py 
+
 ├── create_browser_test_users.py
+
 ├── STAFF_MANUAL_TEST.md 
+
 └── README.md
 
 
@@ -71,9 +78,9 @@ A collaborative Django-based banking system with modules for accounts, ledger, l
 
 2. Create & activate a virtualenv
 
-```bash
+   ```bash
      python -m venv .venv
-
+   ```bash
 
 # Windows
 .\.venv\Scripts\activate
