@@ -73,7 +73,7 @@ A collaborative Django-based banking system with modules for accounts, ledger, l
 
 1. Clone the repository  
    ```bash
-   git clone https://github.com/PsychoQuake7/banking-system.git
+     git clone https://github.com/PsychoQuake7/banking-system.git
    cd banking-system
 
 2. Create & activate a virtualenv
