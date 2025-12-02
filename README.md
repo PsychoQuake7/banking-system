@@ -20,9 +20,10 @@ A collaborative Django-based banking system with modules for accounts, ledger, l
 
 ## Repo layout (top-level)
 
-
+```bash
 ├── accounts/# user & profilemodels, auth logic
-    ├── audit/# auditing / change logs 
+
+├── audit/# auditing / change logs 
 
 ├── clients/# client/customer models & views
 
@@ -63,7 +64,7 @@ A collaborative Django-based banking system with modules for accounts, ledger, l
 ├── STAFF_MANUAL_TEST.md 
 
 └── README.md
-
+```
 
 ---
 
