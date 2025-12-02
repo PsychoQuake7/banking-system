@@ -65,15 +65,13 @@
                                 <tr>
                                     <td class="ps-4 fw-bold">#{{ loan.loan_id }}</td>
                                     <td>
-                                        <div class="fw-bold">{{ loan.application.client.first_name }} {{
-                                            loan.application.client.last_name }}</div>
+                                        <div class="fw-bold">{{ loan.application.client.first_name }} {{ loan.application.client.last_name }}</div>
                                         <div class="small text-muted">{{ loan.application.client.user.email }}</div>
                                     </td>
                                     <td>{{ loan.start_date|date:"M d, Y" }}</td>
                                     <td>{{ loan.term_months }} months</td>
                                     <td class="text-end">₱{{ loan.loan_amount|intcomma }}</td>
-                                    <td class="text-end pe-4 fw-bold text-primary">₱{{ loan.remaining_balance|intcomma
-                                        }}</td>
+                                    <td class="text-end pe-4 fw-bold text-primary">₱{{ loan.remaining_balance|intcomma }}</td>
                                 </tr>
                                 {% empty %}
                                 <tr>
@@ -107,10 +105,8 @@
                                 <tr>
                                     <td class="ps-4 fw-bold">#{{ item.loan.loan_id }}</td>
                                     <td>
-                                        <div class="fw-bold">{{ item.loan.application.client.first_name }} {{
-                                            item.loan.application.client.last_name }}</div>
-                                        <div class="small text-muted">{{ item.loan.application.client.user.email }}
-                                        </div>
+                                        <div class="fw-bold">{{ item.loan.application.client.first_name }} {{ item.loan.application.client.last_name }}</div>
+                                        <div class="small text-muted">{{ item.loan.application.client.user.email }}</div>
                                     </td>
                                     <td><span class="badge bg-danger">{{ item.days_overdue }} days</span></td>
                                     <td>{{ item.installments_overdue }}</td>

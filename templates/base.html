@@ -83,6 +83,21 @@
                             <li><a class="dropdown-item" href="{% url 'loans:loan_application_list' %}">
                                     <i class="fas fa-clipboard-list"></i> Review Loan Applications
                                 </a></li>
+                            <li><a class="dropdown-item" href="{% url 'loans:delinquent_accounts' %}">
+                                    <i class="fas fa-exclamation-triangle"></i> Delinquent Accounts
+                                </a></li>
+                            <li><a class="dropdown-item" href="{% url 'loans:repayment_reports' %}">
+                                    <i class="fas fa-money-check-alt"></i> Repayment Reports
+                                </a></li>
+                            <li><a class="dropdown-item" href="{% url 'loans:loan_reports' %}">
+                                    <i class="fas fa-chart-bar"></i> Loan Reports
+                                </a></li>
+                            <li><a class="dropdown-item" href="{% url 'ledger:financial_report' %}">
+                                    <i class="fas fa-chart-line"></i> Financial Statements
+                                </a></li>
+                            <li><a class="dropdown-item" href="{% url 'notifications:send_notification' %}">
+                                    <i class="fas fa-paper-plane"></i> Send Notification
+                                </a></li>
                             {% if user.role == 'admin' %}
                             <li>
                                 <hr class="dropdown-divider">

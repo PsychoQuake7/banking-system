@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+
+{% block title %}Send Notification - Kayamanan Bank{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="fas fa-paper-plane me-2"></i>Send Notification</h4>
+                </div>
+                <div class="card-body">
+                    {% if messages %}
+                    {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    {% endfor %}
+                    {% endif %}
+
+                    <form method="post" action="{% url 'notifications:send_notification' %}">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="recipient" class="form-label">
+                                <i class="fas fa-user me-2"></i>Recipient <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select" id="recipient" name="recipient" required>
+                                <option value="">Select User...</option>
+                                {% for user in all_users %}
+                                <option value="{{ user.user_id }}">
+                                    {{ user.username }} - {{ user.email }}
+                                    {% if user.role %}({{ user.get_role_display }}){% endif %}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <small class="form-text text-muted">Select the user who will receive this notification</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="notification_type" class="form-label">
+                                <i class="fas fa-tag me-2"></i>Notification Type <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select" id="notification_type" name="notification_type" required>
+                                <option value="">Select Type...</option>
+                                <option value="payment_reminder">Payment Reminder</option>
+                                <option value="loan_approved">Loan Approved</option>
+                                <option value="due_date">Due Date</option>
+                                <option value="system_alert">System Alert</option>
+                            </select>
+                            <small class="form-text text-muted">Choose the type of notification</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="subject" class="form-label">
+                                <i class="fas fa-heading me-2"></i>Subject <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control" id="subject" name="subject" 
+                                   placeholder="Enter notification subject" required>
+                            <small class="form-text text-muted">Brief subject line for the notification</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="message" class="form-label">
+                                <i class="fas fa-comment me-2"></i>Message <span class="text-danger">*</span>
+                            </label>
+                            <textarea class="form-control" id="message" name="message" rows="6" 
+                                      placeholder="Enter the notification message..." required></textarea>
+                            <small class="form-text text-muted">This message will be sent via email and SMS</small>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Note:</strong> This notification will be sent via both Email and SMS channels. 
+                            The notification will be recorded in the system for tracking purposes.
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'notifications:notification_list' %}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Back to Notifications
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane me-2"></i>Send Notification
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Quick Templates -->
+            <div class="card shadow-sm mt-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="fas fa-lightbulb me-2"></i>Quick Templates</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="card border-primary">
+                                <div class="card-body">
+                                    <h6 class="card-title">Payment Reminder</h6>
+                                    <p class="card-text small text-muted">
+                                        Subject: Payment Reminder: Loan Payment Coming Up<br>
+                                        Use this template for payment reminders
+                                    </p>
+                                    <button class="btn btn-sm btn-outline-primary" onclick="fillTemplate('payment_reminder')">
+                                        Use Template
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="card border-success">
+                                <div class="card-body">
+                                    <h6 class="card-title">Loan Approved</h6>
+                                    <p class="card-text small text-muted">
+                                        Subject: Loan Approved<br>
+                                        Use this template for loan approval notifications
+                                    </p>
+                                    <button class="btn btn-sm btn-outline-success" onclick="fillTemplate('loan_approved')">
+                                        Use Template
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="card border-warning">
+                                <div class="card-body">
+                                    <h6 class="card-title">System Alert</h6>
+                                    <p class="card-text small text-muted">
+                                        Subject: System Alert<br>
+                                        Use this template for system notifications
+                                    </p>
+                                    <button class="btn btn-sm btn-outline-warning" onclick="fillTemplate('system_alert')">
+                                        Use Template
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="card border-info">
+                                <div class="card-body">
+                                    <h6 class="card-title">Due Date Reminder</h6>
+                                    <p class="card-text small text-muted">
+                                        Subject: Due Date Reminder<br>
+                                        Use this template for due date notifications
+                                    </p>
+                                    <button class="btn btn-sm btn-outline-info" onclick="fillTemplate('due_date')">
+                                        Use Template
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function fillTemplate(type) {
+    const templates = {
+        'payment_reminder': {
+            type: 'payment_reminder',
+            subject: 'Payment Reminder: Loan Payment Coming Up',
+            message: 'Dear [Client Name], this is a reminder that your loan payment is due soon. Please ensure your account has sufficient funds.'
+        },
+        'loan_approved': {
+            type: 'loan_approved',
+            subject: 'Loan Approved',
+            message: 'Dear [Client Name], your loan application has been approved. The funds will be disbursed shortly.'
+        },
+        'system_alert': {
+            type: 'system_alert',
+            subject: 'System Alert',
+            message: 'This is a system alert notification. Please review the information provided.'
+        },
+        'due_date': {
+            type: 'due_date',
+            subject: 'Due Date Reminder',
+            message: 'Dear [Client Name], this is a reminder that your payment is due on [Date]. Please make the payment on time.'
+        }
+    };
+    
+    const template = templates[type];
+    if (template) {
+        document.getElementById('notification_type').value = template.type;
+        document.getElementById('subject').value = template.subject;
+        document.getElementById('message').value = template.message;
+    }
+}
+</script>
+{% endblock %}
+

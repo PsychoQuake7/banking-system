@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load humanize %}
 
 {% block title %}My Loans - Kayamanan Bank{% endblock %}
 
@@ -133,7 +134,7 @@
                         <td>₱{{ loan.loan_amount }}</td>
                         <td>{{ loan.interest_rate }}%</td>
                         <td>{{ loan.term_months }} months</td>
-                        <td>₱{{ loan.remaining_balance }}</td>
+                        <td>₱{{ loan.remaining_balance|intcomma }}</td>
                         <td>
                             {% with loan.amortization_schedule.first as next_payment %}
                             {% if next_payment %}

@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load humanize %}
 
 {% block title %}Loan #{{ loan.loan_id }} - Kayamanan Bank{% endblock %}
 
@@ -18,14 +19,14 @@
                 <div class="row mb-4">
                     <div class="col-md-6">
                         <p><strong>Loan Amount:</strong><br>
-                            <span class="h4">₱{{ loan.loan_amount }}</span>
+                            <span class="h4">₱{{ loan.loan_amount|intcomma }}</span>
                         </p>
                     </div>
                     <div class="col-md-6">
                         <p class="mb-1"><strong>Remaining Balance:</strong><br>
                             <span
                                 class="h4 text-{% if loan.remaining_balance > 0 %}warning{% else %}success{% endif %}">
-                                ₱{{ loan.remaining_balance }}
+                                ₱{{ loan.remaining_balance|intcomma }}
                             </span>
                         </p>
                         <p class="mb-0">

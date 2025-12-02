@@ -1,11 +1,11 @@
 from django.shortcuts import render, get_object_or_404
-from django.contrib.admin.views.decorators import staff_member_required
 from django.utils import timezone
 from datetime import datetime
+from users.decorators import staff_required
 from .services import FinancialReportService
 from .models import GLAccount
 
-@staff_member_required
+@staff_required
 def financial_report_view(request):
     """
     Display the Income Statement (Financial Report).
@@ -35,7 +35,7 @@ def financial_report_view(request):
     
     return render(request, 'ledger/financial_report.html', context)
 
-@staff_member_required
+@staff_required
 def balance_sheet_view(request):
     """
     View for Balance Sheet Report.
@@ -65,7 +65,7 @@ def balance_sheet_view(request):
     
     return render(request, 'ledger/balance_sheet.html', context)
 
-@staff_member_required
+@staff_required
 def general_ledger_view(request):
     """
     List of all GL Accounts.
@@ -76,7 +76,7 @@ def general_ledger_view(request):
     }
     return render(request, 'ledger/general_ledger.html', context)
 
-@staff_member_required
+@staff_required
 def gl_account_detail_view(request, code):
     """
     Detail view for a specific GL Account showing transaction history.

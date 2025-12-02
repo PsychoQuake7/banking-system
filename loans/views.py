@@ -299,10 +299,11 @@ def make_payment_view(request, id):
 @staff_required
 def disburse_loan_view(request, id):
     loan = get_object_or_404(Loan, loan_id=id)
+    from accounts.models import Account
     
     if loan.is_disbursed:
         messages.warning(request, "This loan has already been disbursed.")
-        return redirect('loan_detail', id=loan.loan_id)
+        return redirect('loans:loan_detail', id=loan.loan_id)
         
     if request.method == 'POST':
         account_id = request.POST.get('account_id')
@@ -322,7 +323,7 @@ def disburse_loan_view(request, id):
                 related_entity_id=loan.loan_id
             )
             messages.success(request, result['message'])
-            return redirect('loan_detail', id=loan.loan_id)
+            return redirect('loans:loan_detail', id=loan.loan_id)
         else:
             messages.error(request, result['message'])
     
@@ -341,7 +342,7 @@ def amortization_schedule_view(request, id):
     loan = get_object_or_404(Loan, loan_id=id)
     
     # Check permission: Owner or Staff/Admin
-    is_owner = hasattr(request.user, 'client') and loan.client == request.user.client
+    is_owner = hasattr(request.user, 'client') and loan.application.client == request.user.client
     is_staff = request.user.role in ['admin', 'staff']
     
     if not (is_owner or is_staff):
@@ -496,6 +497,17 @@ def reject_loan_application_view(request, id):
     application.rejection_reason = request.POST.get('rejection_reason', '')
     application.loan_officer = request.user
     application.save()
+    
+    # Send rejection notification
+    from notifications.services import NotificationService
+    NotificationService.send_notification(
+        user=application.client.user,
+        subject="Loan Application Rejected",
+        message=f"Dear {application.client.first_name}, your loan application #{application.application_id} for ₱{application.loan_amount:,.2f} has been rejected. Reason: {application.rejection_reason or 'No reason provided.'}",
+        notification_type='system_alert',
+        related_entity_type='loan_application',
+        related_entity_id=application.application_id
+    )
     
     messages.success(request, 'Loan application rejected.')
     return redirect('loans:loan_application_list')

@@ -1,0 +1,162 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Delinquent Accounts Report | Kayamanan Banking{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h2 mb-1">Delinquent Accounts Report</h1>
+            <p class="text-muted mb-0">Loans with overdue payments requiring attention</p>
+        </div>
+        <div class="d-flex align-items-center gap-3">
+            <div class="text-muted">
+                Generated on {{ today|date:"F d, Y" }}
+            </div>
+            <a href="?export=pdf" class="btn btn-outline-danger btn-sm" target="_blank">
+                <i class="fas fa-file-pdf me-2"></i>Export PDF
+            </a>
+            <a href="?export=excel" class="btn btn-outline-success btn-sm" target="_blank">
+                <i class="fas fa-file-excel me-2"></i>Export Excel
+            </a>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card border-danger">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-1">Total Delinquent Accounts</h6>
+                            <h2 class="mb-0 text-danger">{{ total_delinquent_count }}</h2>
+                        </div>
+                        <div class="bg-danger bg-opacity-10 rounded-circle p-3">
+                            <i class="fas fa-exclamation-triangle fa-2x text-danger"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-warning">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-1">Total Overdue Amount</h6>
+                            <h2 class="mb-0 text-danger">₱{{ total_overdue_amount|intcomma }}</h2>
+                        </div>
+                        <div class="bg-warning bg-opacity-10 rounded-circle p-3">
+                            <i class="fas fa-money-bill-wave fa-2x text-warning"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-info">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-1">Total Installments Overdue</h6>
+                            <h2 class="mb-0 text-info">{{ total_installments_overdue }}</h2>
+                        </div>
+                        <div class="bg-info bg-opacity-10 rounded-circle p-3">
+                            <i class="fas fa-calendar-times fa-2x text-info"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delinquent Accounts Table -->
+    <div class="card shadow-sm border-danger">
+        <div class="card-header bg-danger bg-opacity-10">
+            <h5 class="mb-0">
+                <i class="fas fa-exclamation-triangle me-2"></i>Delinquent Accounts
+                <span class="badge bg-danger ms-2">{{ total_delinquent_count }}</span>
+            </h5>
+        </div>
+        <div class="card-body p-0">
+            {% if delinquent_loans %}
+            <div class="table-responsive">
+                <table class="table table-hover mb-0 align-middle">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="ps-4">Loan ID</th>
+                            <th>Client</th>
+                            <th>Contact</th>
+                            <th>Days Overdue</th>
+                            <th>Installments Overdue</th>
+                            <th class="text-end">Total Overdue</th>
+                            <th class="text-center pe-4">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in delinquent_loans %}
+                        <tr>
+                            <td class="ps-4">
+                                <a href="{% url 'loans:loan_detail' item.loan.loan_id %}" class="fw-bold text-decoration-none">
+                                    #{{ item.loan.loan_id }}
+                                </a>
+                            </td>
+                            <td>
+                                <div class="fw-bold">{{ item.loan.application.client.first_name }} {{ item.loan.application.client.last_name }}</div>
+                                <div class="small text-muted">Client ID: {{ item.loan.application.client.client_id }}</div>
+                            </td>
+                            <td>
+                                <div class="small">{{ item.loan.application.client.user.email|default:"N/A" }}</div>
+                            </td>
+                            <td>
+                                <span class="badge bg-danger">
+                                    {% if item.days_overdue >= 90 %}
+                                        <i class="fas fa-exclamation-circle me-1"></i>Critical: {{ item.days_overdue }} days
+                                    {% elif item.days_overdue >= 30 %}
+                                        <i class="fas fa-exclamation-triangle me-1"></i>Severe: {{ item.days_overdue }} days
+                                    {% else %}
+                                        {{ item.days_overdue }} days
+                                    {% endif %}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge bg-warning text-dark">{{ item.installments_overdue }} payment{{ item.installments_overdue|pluralize }}</span>
+                            </td>
+                            <td class="text-end fw-bold text-danger">₱{{ item.total_overdue|intcomma }}</td>
+                            <td class="text-center pe-4">
+                                <a href="{% url 'loans:loan_detail' item.loan.loan_id %}" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye me-1"></i>View Details
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-check-circle text-success fa-4x mb-3"></i>
+                <h4 class="text-success">No Delinquent Accounts</h4>
+                <p class="text-muted">All loan payments are up to date. Great job!</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Alert for Critical Accounts -->
+    {% if delinquent_loans %}
+    {% for item in delinquent_loans %}
+    {% if item.days_overdue >= 90 %}
+    <div class="alert alert-danger mt-4">
+        <i class="fas fa-exclamation-circle me-2"></i>
+        <strong>Critical Alert:</strong> Loan #{{ item.loan.loan_id }} has been overdue for {{ item.days_overdue }} days. 
+        Consider taking collection action.
+    </div>
+    {% endif %}
+    {% endfor %}
+    {% endif %}
+</div>
+{% endblock %}
+
