@@ -79,3 +79,4 @@ class Command(BaseCommand):
 
         self.stdout.write(self.style.SUCCESS(f"Sent overdue loan alerts to {count} admin(s)."))
 
+

@@ -164,3 +164,4 @@ crontab -e
 - [ ] Email templates with HTML formatting
 - [ ] Notification digest (daily/weekly summary)
 
+
