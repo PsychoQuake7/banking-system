@@ -34,6 +34,7 @@ class Account(models.Model):
                 account=self,
                 transaction_type=transaction_type,
                 amount=amount,
+                balance_after=self.current_balance,
                 description=description or f"{transaction_type.title()} of {amount}"
             )
 
@@ -56,6 +57,7 @@ class Account(models.Model):
                 account=self,
                 transaction_type=transaction_type,
                 amount=amount,
+                balance_after=self.current_balance,
                 description=description or f"{transaction_type.title()} of {amount}"
             )
 

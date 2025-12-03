@@ -15,6 +15,7 @@ class Transaction(models.Model):
     loan = models.ForeignKey('loans.Loan', on_delete=models.SET_NULL, null=True, blank=True, related_name='transactions')
     transaction_type = models.CharField(max_length=20, choices=TRANSACTION_TYPES)
     amount = models.DecimalField(max_digits=15, decimal_places=2)
+    balance_after = models.DecimalField(max_digits=15, decimal_places=2, null=True, blank=True)
     transaction_date = models.DateTimeField(auto_now_add=True)
     description = models.TextField(blank=True, null=True)
 

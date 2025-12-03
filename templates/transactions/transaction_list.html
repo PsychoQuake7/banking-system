@@ -6,7 +6,7 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1><i class="fas fa-history me-2"></i>Transaction History</h1>
     <div>
-        {% if user.role  ==  'admin' or user.role  ==  'staff' %}
+        {% if user.role == 'admin' or user.role == 'staff' %}
         <a href="{% url 'transactions:transaction_create' %}" class="btn btn-success me-2">
             <i class="fas fa-plus me-2"></i>New Transaction
         </a>
@@ -27,7 +27,7 @@
                     <option value="">All Accounts</option>
                     {% for acc in accounts %}
                     {% with acc_id_str=acc.account_id|stringformat:"i" %}
-                    <option value="{{ acc.account_id }}" {% if request.GET.account  ==  acc_id_str %}selected{% endif %}>
+                    <option value="{{ acc.account_id }}" {% if request.GET.account == acc_id_str %}selected{% endif %}>
                         {{ acc.account_number }}
                     </option>
                     {% endwith %}
@@ -104,8 +104,7 @@
                         </td>
                         <td
                             class="{% if transaction.transaction_type  ==  'deposit' %}text-success{% else %}text-danger{% endif %}">
-                            {% if transaction.transaction_type  ==  'deposit' %}+{% else %}-{% endif %}₱{{
-                            transaction.amount }}
+                            {% if transaction.transaction_type == 'deposit' %}+{% else %}-{% endif %}₱{{ transaction.amount }}
                         </td>
                         <td>
                             <strong>₱{{ transaction.balance_after|default:"-" }}</strong>

@@ -25,8 +25,10 @@
                 <select class="form-select" name="status">
                     <option value="">All Status</option>
                     <option value="pending" {% if request.GET.status == 'pending' %}selected{% endif %}>Pending</option>
-                    <option value="approved" {% if request.GET.status == 'approved' %}selected{% endif %}>Approved</option>
-                    <option value="rejected" {% if request.GET.status == 'rejected' %}selected{% endif %}>Rejected</option>
+                    <option value="approved" {% if request.GET.status == 'approved' %}selected{% endif %}>Approved
+                    </option>
+                    <option value="rejected" {% if request.GET.status == 'rejected' %}selected{% endif %}>Rejected
+                    </option>
                     <option value="active" {% if request.GET.status == 'active' %}selected{% endif %}>Active</option>
                     <option value="paid" {% if request.GET.status == 'paid' %}selected{% endif %}>Paid</option>
                 </select>
