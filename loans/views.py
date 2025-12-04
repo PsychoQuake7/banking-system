@@ -226,6 +226,14 @@ def loan_application_list_view(request):
     if end_date:
         applications = applications.filter(application_date__date__lte=end_date)
     
+    # Handle export requests
+    if request.GET.get('export') == 'pdf':
+        from utils.loan_application_export import generate_loan_applications_pdf
+        return generate_loan_applications_pdf(applications)
+    elif request.GET.get('export') == 'excel':
+        from utils.loan_application_export import generate_loan_applications_excel
+        return generate_loan_applications_excel(applications)
+    
     # Calculate stats for the cards
     pending_count = applications.filter(status='pending').count()
     approved_count = applications.filter(status='approved').count()

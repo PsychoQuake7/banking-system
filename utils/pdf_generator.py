@@ -106,7 +106,11 @@ def generate_loan_report_pdf(active_loans, delinquent_loans, recent_repayments):
     elements.append(Spacer(1, 0.25*inch))
     
     # Active Loans
-    elements.append(Paragraph(f"Active Loans ({active_loans.count()})", styles['Heading2']))
+    try:
+        active_count = active_loans.count()
+    except (AttributeError, TypeError):
+        active_count = len(active_loans)
+    elements.append(Paragraph(f"Active Loans ({active_count})", styles['Heading2']))
     if active_loans:
         data = [['Loan ID', 'Client', 'Start Date', 'Term', 'Amount', 'Balance']]
         for loan in active_loans:

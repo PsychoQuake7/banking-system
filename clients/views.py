@@ -6,7 +6,7 @@ from users.decorators import staff_required, admin_required
 # Create your views here.
 # @staff_required
 def client_list_view(request):
-    clients = Client.objects.all().order_by('-created_at')
+    clients = Client.objects.all().select_related('user').order_by('-created_at')
     
     # Search filter
     search_query = request.GET.get('search')
@@ -37,6 +37,14 @@ def client_list_view(request):
             clients = clients.filter(credit_score__range=(600, 699))
         elif credit_score == 'poor':
             clients = clients.filter(credit_score__lt=600)
+
+    # Handle export requests
+    if request.GET.get('export') == 'pdf':
+        from utils.client_export import generate_clients_pdf
+        return generate_clients_pdf(clients)
+    elif request.GET.get('export') == 'excel':
+        from utils.client_export import generate_clients_excel
+        return generate_clients_excel(clients)
 
     context = {
         'clients': clients,
